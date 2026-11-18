@@ -1,0 +1,2367 @@
+-- F##k GUI v55 | LocalScript
+-- StarterPlayer -> StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local SoundService = game:GetService("SoundService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ========== НАСТРОЙКИ ==========
+local DASH_IMAGE_ID      = "rbxassetid://113658997829081"
+local SONIC_IMAGE_ID     = "rbxassetid://100841765574409"
+local BOT_IMAGE_ID       = "rbxassetid://137167322752509"
+local ADMIN_IMAGE_ID     = "rbxassetid://111771186403980"
+local DASH_ANIMATION_ID  = "rbxassetid://119889021060156"
+local BOT_ANIMATION_ID   = "rbxassetid://138590353960942"
+local DASH_VELOCITY_POWER = 80
+local DASH_VELOCITY_TIME  = 0.1
+local DASH_ANIM_TIME      = 0.5
+
+-- ========== ГЛОБАЛЬНЫЕ СТЕЙТЫ ==========
+local adminUsed = false
+local dussekarUsed = false
+local noliLoaded = false
+local spidermanUsed = false
+local flyR6Used = false
+local flyR15Used = false
+local megaFireStormUsed = false
+local npcControlUsed = false
+local yarhmUsed = false
+local genlwameUsed = false
+local ndsHubUsed = false
+local hamsterBallUsed = false
+local katerhubV5Used = false
+local chanceAimbotUsed = false
+local forsakenMacroUsed = false
+local detectSpectateUsed = false
+local c00lclanUsed = false
+local rickTpGunUsed = false
+local slideCrouchUsed = false
+local flyAsuUsed = false
+local giantTRexUsed = false
+local abysallHubUsed = false
+local waypointsUsed = false
+local timeControlUsed = false
+local idFinderUsed = false
+local oblivionEmotesUsed = false
+local opOblivionFTAPUsed = false
+local invisibleFrUsed = false
+local forsakenPlusUsed = false
+local dtexeUsed = false
+local babftFarmUsed = false
+local verityUsed = false
+local infiniteYieldUsed = false
+local projectAbyssUsed = false
+local dexUsed = false
+local farmerAuraEnabled = false
+local threeThousandEightUsed = false
+local sanderXYUsed = false
+local tffaOpScriptUsed = false
+local silentiumHubUsed = false
+local invincibleFlyR15FixedUsed = false
+local uselessHubSaeUsed = false
+local assistantRoChessUsed = false
+local botPlayFFUsed = false
+local chatRobloxUsed = false
+local realisticFPUsed = false
+local workbenchCraftingUsed = false
+local catsakenUsed = false
+local codeInterpreterUsed = false
+local namelessAdminUsed = false
+local localPlayerHubUsed = false
+local yarhmBrookhavenUsed = false
+local afemMaxUsed = false
+local serverHackerXUsed = false
+local serverAdminUsed = false
+local starGlitcherUsed = false
+local axirianGlitcherUsed = false
+local xzypMusicPlayerUsed = false
+local noobysReanimationUsed = false
+local hasEnteredKey = false
+
+local screenGui, dashGui, sonicGui, musicGui, botGui, confirmGui, keyGui
+local noclipConn, sonicVelocity, sonicTrack
+local speedGui, animGui, jumpPowerGui, animSpeedGui, fishConn, animSpeedConn
+local currentAnimSpeed = 1
+local createGUI
+
+local lidarGui, lidarTool, lidarPointsFolder
+local lidarPower = 1
+local lidarEquipped = false
+local lidarRegenConn = nil
+
+local espConns = {}
+local espHighlights = {}
+
+local gravityGuiEnabled = false
+local fpsEnabled = false
+local pingEnabled = false
+local gravityGui, fpsGui, pingGui
+local fpsConn, pingConn
+
+local invisibleAnimEnabled = false
+local invisibleAnimTrack = nil
+
+local danceTracks = {}
+local danceEnabled = {}
+local azureActive = false
+local azureSavedData = nil
+local oneXR15Active = false
+local oneXR15SavedData = nil
+
+local stalkerActive = false
+local stalkerSavedData = nil
+local stalkerGui = nil
+local stalkerAltWalk = false
+local fakeBlockEnabled = false
+local fakeBlockGui = nil
+
+local farmerAuraGui = nil
+local farmerAuraTrack = nil
+local farmerSparkles = nil
+local dexRainbowConn = nil
+
+local customAnimGuis = {}
+
+-- ========== ВСПОМОГАТЕЛЬНЫЕ ==========
+local function makeDraggable(frame, dragArea)
+    dragArea = dragArea or frame
+    local dragging = false
+    local dragInput, dragStart, startPos
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    dragArea.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    dragArea.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then update(input) end
+    end)
+end
+
+local function createIndicator(parent)
+    local indicator = Instance.new("Frame")
+    indicator.Name = "Indicator"
+    indicator.Size = UDim2.new(0, 16, 0, 16)
+    indicator.Position = UDim2.new(1, -24, 0.5, -8)
+    indicator.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    indicator.BorderSizePixel = 0
+    indicator.Parent = parent
+    local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, 4); corner.Parent = indicator
+    return indicator
+end
+
+local function setIndicatorState(indicator, enabled)
+    indicator.BackgroundColor3 = enabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+end
+
+local function applyVelocity(rootPart, power, duration)
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = "DashVelocity"
+    local look = rootPart.CFrame.LookVector
+    look = Vector3.new(look.X, 0, look.Z)
+    if look.Magnitude > 0 then look = look.Unit end
+    bv.Velocity = look * power
+    bv.MaxForce = Vector3.new(100000, 0, 100000)
+    bv.Parent = rootPart
+    if duration and duration > 0 then
+        task.delay(duration, function() if bv and bv.Parent then bv:Destroy() end end)
+    end
+    return bv
+end
+
+local function playAnimation(humanoid, animId, stopAfter)
+    local animator = humanoid:FindFirstChildOfClass("Animator")
+    if not animator then return nil end
+    local anim = Instance.new("Animation")
+    anim.AnimationId = animId
+    local track = animator:LoadAnimation(anim)
+    track:Play()
+    if stopAfter and stopAfter > 0 then
+        task.delay(stopAfter, function() if track then track:Stop() end end)
+    end
+    return track
+end
+
+local function updateESPState(key, enabled, getTargets)
+    if espConns[key] then espConns[key]:Disconnect() espConns[key] = nil end
+    if espHighlights[key] then
+        for _, hl in pairs(espHighlights[key]) do if hl and hl.Parent then hl:Destroy() end end
+        espHighlights[key] = {}
+    end
+    if enabled then
+        espHighlights[key] = {}
+        espConns[key] = RunService.RenderStepped:Connect(function()
+            local color = Color3.fromHSV((tick() % 5) / 5, 1, 1)
+            local targets = getTargets()
+            for _, char in ipairs(targets) do
+                if not espHighlights[key][char] or not espHighlights[key][char].Parent then
+                    local hl = Instance.new("Highlight")
+                    hl.FillColor = color; hl.OutlineColor = color; hl.Parent = char
+                    espHighlights[key][char] = hl
+                else
+                    espHighlights[key][char].FillColor = color
+                    espHighlights[key][char].OutlineColor = color
+                end
+            end
+            for char, hl in pairs(espHighlights[key]) do
+                if not char.Parent or not table.find(targets, char) then
+                    if hl and hl.Parent then hl:Destroy() end
+                    espHighlights[key][char] = nil
+                end
+            end
+        end)
+    end
+end
+
+local function forceReloadAnimate(char)
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    local oldAnimator = hum:FindFirstChildOfClass("Animator")
+    if oldAnimator then
+        for _, track in ipairs(oldAnimator:GetPlayingAnimationTracks()) do
+            pcall(function() track:Stop() end)
+        end
+        pcall(function() oldAnimator:Destroy() end)
+    end
+    local oldAnimate = char:FindFirstChild("Animate")
+    local clonedAnimate = nil
+    if oldAnimate then
+        clonedAnimate = oldAnimate:Clone()
+        oldAnimate:Destroy()
+    end
+    task.wait(0.2)
+    local newAnimator = Instance.new("Animator")
+    newAnimator.Parent = hum
+    if clonedAnimate then
+        clonedAnimate.Parent = char
+    end
+    task.wait(0.15)
+    if hum.MoveDirection.Magnitude > 0.1 then
+        hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+        task.wait(0.05)
+        hum:ChangeState(Enum.HumanoidStateType.Running)
+    end
+end
+
+local function restoreAnimState(savedData, animate, hum)
+    if not savedData or not animate then return end
+    if hum then hum.WalkSpeed = savedData.walkSpeed or 16 end
+    if savedData.idle1 and animate.idle and animate.idle:FindFirstChild("Animation1") then animate.idle.Animation1.AnimationId = savedData.idle1 end
+    if savedData.idle2 and animate.idle and animate.idle:FindFirstChild("Animation2") then animate.idle.Animation2.AnimationId = savedData.idle2 end
+    if savedData.walkAnim and animate.walk and animate.walk:FindFirstChild("WalkAnim") then animate.walk.WalkAnim.AnimationId = savedData.walkAnim end
+    if savedData.runAnim and animate.run and animate.run:FindFirstChild("RunAnim") then animate.run.RunAnim.AnimationId = savedData.runAnim end
+    local char = animate.Parent
+    forceReloadAnimate(char)
+end
+
+local function ensureSparkles(root)
+    if farmerSparkles and farmerSparkles.Parent == root then
+        farmerSparkles.Enabled = true
+        return farmerSparkles
+    end
+    if farmerSparkles and farmerSparkles.Parent then
+        pcall(function() farmerSparkles:Destroy() end)
+    end
+    farmerSparkles = nil
+    if not root then return nil end
+    local emitter = Instance.new("ParticleEmitter")
+    emitter.Name = "FarmerSparkles"
+    emitter.Texture = "rbxassetid://243660364"
+    emitter.Color = ColorSequence.new(Color3.new(1, 1, 1))
+    emitter.Lifetime = NumberRange.new(0.5, 1.5)
+    emitter.Rate = 40
+    emitter.Speed = NumberRange.new(2, 5)
+    emitter.SpreadAngle = Vector2.new(180, 180)
+    emitter.Rotation = NumberRange.new(0, 360)
+    emitter.RotSpeed = NumberRange.new(-90, 90)
+    emitter.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.4, 0.5),
+        NumberSequenceKeypoint.new(1, 0)
+    })
+    emitter.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.7, 0),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    emitter.LightEmission = 1
+    emitter.Acceleration = Vector3.new(0, 3, 0)
+    emitter.EmissionDirection = Enum.NormalId.Top
+    emitter.Enabled = true
+    emitter.Parent = root
+    farmerSparkles = emitter
+    return emitter
+end
+
+local function destroyGUIs()
+    for _, gui in ipairs({screenGui, dashGui, sonicGui, musicGui, botGui, confirmGui, keyGui, speedGui, animGui, jumpPowerGui, animSpeedGui, lidarGui, gravityGui, fpsGui, pingGui}) do
+        if gui then pcall(function() gui:Destroy() end) end
+    end
+    screenGui, dashGui, sonicGui, musicGui, botGui, confirmGui, keyGui = nil, nil, nil, nil, nil, nil, nil
+    speedGui, animGui, jumpPowerGui, animSpeedGui, lidarGui = nil, nil, nil, nil, nil
+    gravityGui, fpsGui, pingGui = nil, nil, nil
+    for i = 1, #customAnimGuis do
+        if customAnimGuis[i] then pcall(function() customAnimGuis[i]:Destroy() end) end
+    end
+    customAnimGuis = {}
+    if lidarTool then lidarTool:Destroy(); lidarTool = nil end
+    if lidarPointsFolder then lidarPointsFolder:Destroy(); lidarPointsFolder = nil end
+    if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+    if fishConn then fishConn:Disconnect(); fishConn = nil end
+    if animSpeedConn then animSpeedConn:Disconnect(); animSpeedConn = nil end
+    if lidarRegenConn then lidarRegenConn:Disconnect(); lidarRegenConn = nil end
+    if sonicVelocity then sonicVelocity:Destroy(); sonicVelocity = nil end
+    if sonicTrack then sonicTrack:Stop(); sonicTrack = nil end
+    if fpsConn then fpsConn:Disconnect(); fpsConn = nil end
+    if pingConn then pingConn:Disconnect(); pingConn = nil end
+    if invisibleAnimTrack then pcall(function() invisibleAnimTrack:Stop() end); invisibleAnimTrack = nil end
+    invisibleAnimEnabled = false
+    for k, track in pairs(danceTracks) do
+        pcall(function() track:Stop() end)
+        danceTracks[k] = nil
+    end
+    for k in pairs(danceEnabled) do danceEnabled[k] = false end
+    if dexRainbowConn then dexRainbowConn:Disconnect(); dexRainbowConn = nil end
+    if farmerAuraGui then pcall(function() farmerAuraGui:Destroy() end); farmerAuraGui = nil end
+    if farmerAuraTrack then pcall(function() farmerAuraTrack:Stop() end); farmerAuraTrack = nil end
+    if farmerSparkles then pcall(function() farmerSparkles:Destroy() end); farmerSparkles = nil end
+    farmerAuraEnabled = false
+    local char = player.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local animate = char and char:FindFirstChild("Animate")
+    if azureActive and azureSavedData then restoreAnimState(azureSavedData, animate, hum) end
+    azureActive = false; azureSavedData = nil
+    if oneXR15Active and oneXR15SavedData then restoreAnimState(oneXR15SavedData, animate, hum) end
+    oneXR15Active = false; oneXR15SavedData = nil
+    if stalkerActive and stalkerSavedData then restoreAnimState(stalkerSavedData, animate, hum) end
+    stalkerActive = false; stalkerSavedData = nil; stalkerAltWalk = false
+    if stalkerGui then pcall(function() stalkerGui:Destroy() end); stalkerGui = nil end
+    if fakeBlockGui then pcall(function() fakeBlockGui:Destroy() end); fakeBlockGui = nil end
+    fakeBlockEnabled = false
+    for k, conn in pairs(espConns) do if conn then conn:Disconnect() end end
+    espConns = {}
+    for k, hls in pairs(espHighlights) do
+        for _, hl in pairs(hls) do if hl and hl.Parent then hl:Destroy() end end
+    end
+    espHighlights = {}
+end
+
+-- ========== KEY SYSTEM ==========
+local function createKeySystem()
+    keyGui = Instance.new("ScreenGui")
+    keyGui.Name = "KeySystemGui"
+    keyGui.ResetOnSpawn = false
+    keyGui.Parent = playerGui
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 280, 0, 190)
+    mainFrame.Position = UDim2.new(0.5, -140, 0.5, -95)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    mainFrame.BorderSizePixel = 0; mainFrame.Active = true; mainFrame.Parent = keyGui
+    local mc = Instance.new("UICorner"); mc.CornerRadius = UDim.new(0, 10); mc.Parent = mainFrame
+    local titleBar = Instance.new("Frame")
+    titleBar.Size = UDim2.new(1, 0, 0, 35); titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    titleBar.BorderSizePixel = 0; titleBar.Parent = mainFrame
+    local tc = Instance.new("UICorner"); tc.CornerRadius = UDim.new(0, 10); tc.Parent = titleBar
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -10, 1, 0); titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.BackgroundTransparency = 1; titleLabel.Text = "f#####g key system"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255); titleLabel.TextSize = 16
+    titleLabel.Font = Enum.Font.SourceSansBold; titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = titleBar
+    makeDraggable(mainFrame, titleBar)
+    local inputBox = Instance.new("TextBox")
+    inputBox.Size = UDim2.new(1, -20, 0, 35); inputBox.Position = UDim2.new(0, 10, 0, 45)
+    inputBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45); inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    inputBox.PlaceholderText = "Enter key here..."; inputBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    inputBox.Font = Enum.Font.SourceSans; inputBox.TextSize = 14; inputBox.Text = ""
+    inputBox.ClearTextOnFocus = false; inputBox.Parent = mainFrame
+    local ic = Instance.new("UICorner"); ic.CornerRadius = UDim.new(0, 6); ic.Parent = inputBox
+    local enterBtn = Instance.new("TextButton")
+    enterBtn.Size = UDim2.new(1, -20, 0, 35); enterBtn.Position = UDim2.new(0, 10, 0, 95)
+    enterBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0); enterBtn.Text = "Enter"
+    enterBtn.TextColor3 = Color3.fromRGB(255, 255, 255); enterBtn.Font = Enum.Font.SourceSansBold
+    enterBtn.TextSize = 14; enterBtn.Parent = mainFrame
+    local ec = Instance.new("UICorner"); ec.CornerRadius = UDim.new(0, 6); ec.Parent = enterBtn
+    local showKeysBtn = Instance.new("TextButton")
+    showKeysBtn.Size = UDim2.new(1, -20, 0, 30); showKeysBtn.Position = UDim2.new(0, 10, 0, 145)
+    showKeysBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60); showKeysBtn.Text = "Show keys"
+    showKeysBtn.TextColor3 = Color3.fromRGB(255, 255, 255); showKeysBtn.Font = Enum.Font.SourceSansBold
+    showKeysBtn.TextSize = 13; showKeysBtn.Parent = mainFrame
+    local skc = Instance.new("UICorner"); skc.CornerRadius = UDim.new(0, 6); skc.Parent = showKeysBtn
+    local validKeyList = {"fuh this is by AI", "i hate 67", "i hate 61"}
+    showKeysBtn.MouseButton1Click:Connect(function()
+        local keysGui = Instance.new("ScreenGui")
+        keysGui.Name = "KeysListGui"; keysGui.ResetOnSpawn = false; keysGui.DisplayOrder = 999; keysGui.Parent = playerGui
+        local listFrame = Instance.new("Frame")
+        listFrame.Size = UDim2.new(0, 280, 0, 300); listFrame.Position = UDim2.new(0.5, -140, 0.5, -150)
+        listFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        listFrame.BorderSizePixel = 0; listFrame.Active = true; listFrame.Parent = keysGui
+        local lc = Instance.new("UICorner"); lc.CornerRadius = UDim.new(0, 10); lc.Parent = listFrame
+        local kTitleBar = Instance.new("Frame")
+        kTitleBar.Size = UDim2.new(1, 0, 0, 35); kTitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        kTitleBar.BorderSizePixel = 0; kTitleBar.Parent = listFrame
+        local ktc = Instance.new("UICorner"); ktc.CornerRadius = UDim.new(0, 10); ktc.Parent = kTitleBar
+        local kTitle = Instance.new("TextLabel")
+        kTitle.Size = UDim2.new(1, -50, 1, 0); kTitle.Position = UDim2.new(0, 10, 0, 0)
+        kTitle.BackgroundTransparency = 1; kTitle.Text = "Valid Keys"
+        kTitle.TextColor3 = Color3.fromRGB(255, 255, 255); kTitle.TextSize = 16
+        kTitle.Font = Enum.Font.SourceSansBold; kTitle.TextXAlignment = Enum.TextXAlignment.Left
+        kTitle.Parent = kTitleBar
+        local kClose = Instance.new("TextButton")
+        kClose.Size = UDim2.new(0, 30, 0, 30); kClose.Position = UDim2.new(1, -35, 0.5, -15)
+        kClose.BackgroundTransparency = 1; kClose.Text = "X"
+        kClose.TextColor3 = Color3.fromRGB(255, 100, 100); kClose.TextSize = 18
+        kClose.Font = Enum.Font.SourceSansBold; kClose.Parent = kTitleBar
+        makeDraggable(listFrame, kTitleBar)
+        kClose.MouseButton1Click:Connect(function() keysGui:Destroy() end)
+        local scroll = Instance.new("ScrollingFrame")
+        scroll.Size = UDim2.new(1, -20, 1, -50); scroll.Position = UDim2.new(0, 10, 0, 45)
+        scroll.BackgroundTransparency = 1; scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y; scroll.ScrollBarThickness = 3; scroll.Parent = listFrame
+        local kl = Instance.new("UIListLayout")
+        kl.Padding = UDim.new(0, 6); kl.SortOrder = Enum.SortOrder.LayoutOrder; kl.Parent = scroll
+        for i, k in ipairs(validKeyList) do
+            local kLabel = Instance.new("TextLabel")
+            kLabel.Size = UDim2.new(1, -6, 0, 40); kLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            kLabel.Text = tostring(i) .. ". " .. k; kLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            kLabel.TextSize = 14; kLabel.Font = Enum.Font.SourceSansBold
+            kLabel.TextXAlignment = Enum.TextXAlignment.Left; kLabel.LayoutOrder = i; kLabel.Parent = scroll
+            local kc2 = Instance.new("UICorner"); kc2.CornerRadius = UDim.new(0, 6); kc2.Parent = kLabel
+        end
+    end)
+    local function showFail()
+        keyGui:Destroy()
+        local failGui = Instance.new("ScreenGui")
+        failGui.Name = "FailGui"; failGui.ResetOnSpawn = false; failGui.Parent = playerGui
+        local whiteFrame = Instance.new("Frame")
+        whiteFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        whiteFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        whiteFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+        whiteFrame.Size = UDim2.new(0, 0, 0, 0); whiteFrame.Parent = failGui
+        whiteFrame.BorderSizePixel = 0
+        local midText = Instance.new("TextLabel")
+        midText.Size = UDim2.new(1, 0, 1, 0); midText.BackgroundTransparency = 1
+        midText.Text = "This is not the right key!"; midText.TextColor3 = Color3.fromRGB(255, 0, 0)
+        midText.TextScaled = true; midText.Font = Enum.Font.SourceSansBold
+        midText.TextStrokeTransparency = 0; midText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        midText.Parent = whiteFrame
+        TweenService:Create(midText, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {TextColor3 = Color3.fromRGB(0, 0, 0)}):Play()
+        for i = 1, 5 do
+            TweenService:Create(whiteFrame, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {Size = UDim2.new(i * 0.4, 0, i * 0.4, 0)}):Play()
+            task.wait(0.3)
+        end
+        task.wait(1); failGui:Destroy()
+    end
+    enterBtn.MouseButton1Click:Connect(function()
+        local rawInput = inputBox.Text
+        local cleanInput = string.lower((string.gsub(rawInput, "^%s*(.-)%s*$", "%1")))
+        local validKeys = {["fuh this is by ai"]=true, ["i hate 67"]=true, ["i hate 61"]=true}
+        if validKeys[cleanInput] then
+            hasEnteredKey = true; keyGui:Destroy(); keyGui = nil; createGUI()
+        else showFail() end
+    end)
+end
+
+-- ========== ОСНОВНОЕ МЕНЮ ==========
+createGUI = function()
+    local dashEnabled, noclipEnabled, musicGuiEnabled, sonicGuiEnabled, botGuiEnabled = false, false, false, false, false
+    local sonicActive, infJumpEnabled, speedGuiEnabled, animGuiEnabled, fishEnabled = false, false, false, false, false
+    local jumpPowerGuiEnabled, animSpeedGuiEnabled = false, false
+
+    screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "F##k_GUI"; screenGui.ResetOnSpawn = false; screenGui.Parent = playerGui
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 280, 0, 320)
+    mainFrame.Position = UDim2.new(0.5, -140, 0.5, -160)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    mainFrame.BorderSizePixel = 0; mainFrame.Active = true; mainFrame.Parent = screenGui
+    local mc = Instance.new("UICorner"); mc.CornerRadius = UDim.new(0, 10); mc.Parent = mainFrame
+
+    local titleBar = Instance.new("Frame")
+    titleBar.Size = UDim2.new(1, 0, 0, 35); titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    titleBar.BorderSizePixel = 0; titleBar.Parent = mainFrame
+    local tc = Instance.new("UICorner"); tc.CornerRadius = UDim.new(0, 10); tc.Parent = titleBar
+
+    local minimizedImage = Instance.new("ImageButton")
+    minimizedImage.Size = UDim2.new(0, 60, 0, 60)
+    minimizedImage.Position = UDim2.new(0.5, -30, 0.5, -30)
+    minimizedImage.Image = "rbxassetid://7345721699"
+    minimizedImage.BackgroundTransparency = 1; minimizedImage.Visible = false
+    minimizedImage.Parent = screenGui
+    makeDraggable(minimizedImage)
+
+    local buttonContainer = Instance.new("ScrollingFrame")
+    buttonContainer.Size = UDim2.new(1, -20, 1, -45)
+    buttonContainer.Position = UDim2.new(0, 10, 0, 40)
+    buttonContainer.BackgroundTransparency = 1
+    buttonContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    buttonContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    buttonContainer.ScrollBarThickness = 3; buttonContainer.Parent = mainFrame
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0, 6); listLayout.SortOrder = Enum.SortOrder.LayoutOrder; listLayout.Parent = buttonContainer
+
+    -- ========== ФИЛЬТР (ЗВЕЗДА) ==========
+    local allButtonFrames = {}
+    local starredButtons = {}
+    local currentFilter = "default"
+    local function applyFilter()
+        for _, frame in ipairs(allButtonFrames) do
+            if frame and frame.Parent then
+                if currentFilter == "default" then
+                    frame.Visible = true
+                else
+                    frame.Visible = starredButtons[frame] == true
+                end
+            end
+        end
+    end
+
+    local function makeMenuButton(text, order, isRed)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, -6, 0, 42)
+        frame.BackgroundColor3 = isRed and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(45, 45, 45)
+        frame.BorderSizePixel = 0; frame.LayoutOrder = order; frame.Parent = buttonContainer
+        local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 6); c.Parent = frame
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -55, 1, 0); btn.BackgroundTransparency = 1
+        btn.Text = text; btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.TextSize = 13; btn.Font = Enum.Font.SourceSansBold
+        btn.TextXAlignment = Enum.TextXAlignment.Left; btn.TextTruncate = Enum.TextTruncate.AtEnd
+        btn.Parent = frame
+
+        local starBtn = Instance.new("TextButton")
+        starBtn.Name = "StarToggle"
+        starBtn.Size = UDim2.new(0, 20, 0, 20)
+        starBtn.Position = UDim2.new(1, -50, 0.5, -10)
+        starBtn.BackgroundTransparency = 1
+        starBtn.Text = "☆"
+        starBtn.TextColor3 = Color3.fromRGB(120, 120, 120)
+        starBtn.TextSize = 20
+        starBtn.Font = Enum.Font.SourceSansBold
+        starBtn.Parent = frame
+        starBtn.MouseButton1Click:Connect(function()
+            if starredButtons[frame] then
+                starredButtons[frame] = nil
+                starBtn.Text = "☆"
+                starBtn.TextColor3 = Color3.fromRGB(120, 120, 120)
+            else
+                starredButtons[frame] = true
+                starBtn.Text = "★"
+                starBtn.TextColor3 = Color3.fromRGB(255, 215, 0)
+            end
+            if currentFilter == "starred" then applyFilter() end
+        end)
+
+        table.insert(allButtonFrames, frame)
+        return frame, btn
+    end
+
+    local function makeColorToggleButton(text, order)
+        local frame, btn = makeMenuButton(text, order)
+        frame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+        return frame, btn
+    end
+
+    local function makeScriptButton(text, order, url, stateKey)
+        local frame, btn = makeMenuButton(text, order)
+        local indicator = createIndicator(frame)
+        if stateKey and _G[stateKey] then btn.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(indicator, true) end
+        btn.MouseButton1Click:Connect(function()
+            if stateKey and _G[stateKey] then return end
+            if stateKey then _G[stateKey] = true end
+            setIndicatorState(indicator, true); btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+            task.spawn(function() loadstring(game:HttpGet(url))() end)
+        end)
+        return frame, btn
+    end
+
+    local function makeAnimInputTool(text, order, mode)
+        local frame, btn = makeMenuButton(text, order)
+        local indicator = createIndicator(frame)
+        local guiEnabled = false
+        local gui = nil
+        btn.MouseButton1Click:Connect(function()
+            guiEnabled = not guiEnabled
+            setIndicatorState(indicator, guiEnabled)
+            if guiEnabled then
+                if not gui then
+                    gui = Instance.new("ScreenGui"); gui.Name = "AnimInput_" .. tostring(order); gui.ResetOnSpawn = false; gui.Parent = playerGui
+                    table.insert(customAnimGuis, gui)
+                    local main = Instance.new("Frame"); main.Size = UDim2.new(0, 280, 0, 150); main.Position = UDim2.new(0.5, -140, 0.5, -75)
+                    main.BackgroundColor3 = Color3.fromRGB(25, 25, 25); main.BorderSizePixel = 0; main.Active = true; main.Parent = gui
+                    local mcc = Instance.new("UICorner"); mcc.CornerRadius = UDim.new(0,10); mcc.Parent = main
+                    local tb = Instance.new("Frame"); tb.Size = UDim2.new(1, 0, 0, 35); tb.BackgroundColor3 = Color3.fromRGB(40,40,40)
+                    tb.BorderSizePixel = 0; tb.Parent = main
+                    local tbc = Instance.new("UICorner"); tbc.CornerRadius = UDim.new(0,10); tbc.Parent = tb
+                    local tl = Instance.new("TextLabel"); tl.Size = UDim2.new(1, -10, 1, 0); tl.Position = UDim2.new(0, 10, 0, 0)
+                    tl.BackgroundTransparency = 1; tl.Text = text; tl.TextColor3 = Color3.fromRGB(255,255,255); tl.TextSize = 16
+                    tl.Font = Enum.Font.SourceSansBold; tl.TextXAlignment = Enum.TextXAlignment.Left; tl.Parent = tb
+                    makeDraggable(main, tb)
+                    local input = Instance.new("TextBox")
+                    input.Size = UDim2.new(1, -20, 0, 35); input.Position = UDim2.new(0, 10, 0, 45)
+                    input.BackgroundColor3 = Color3.fromRGB(45,45,45); input.TextColor3 = Color3.fromRGB(255,255,255)
+                    input.PlaceholderText = "Enter animation ID here..."; input.PlaceholderColor3 = Color3.fromRGB(150,150,150)
+                    input.Font = Enum.Font.SourceSans; input.TextSize = 14; input.Text = ""; input.ClearTextOnFocus = false; input.Parent = main
+                    local ic2 = Instance.new("UICorner"); ic2.CornerRadius = UDim.new(0,6); ic2.Parent = input
+                    local enter = Instance.new("TextButton")
+                    enter.Size = UDim2.new(1, -20, 0, 35); enter.Position = UDim2.new(0, 10, 0, 95)
+                    enter.BackgroundColor3 = Color3.fromRGB(0,150,0); enter.Text = "Enter"
+                    enter.TextColor3 = Color3.fromRGB(255,255,255); enter.Font = Enum.Font.SourceSansBold
+                    enter.TextSize = 14; enter.Parent = main
+                    local ec2 = Instance.new("UICorner"); ec2.CornerRadius = UDim.new(0,6); ec2.Parent = enter
+                    enter.MouseButton1Click:Connect(function()
+                        local id = input.Text
+                        if not id or id == "" then return end
+                        if not string.find(id, "rbxassetid://") then id = "rbxassetid://" .. id end
+                        local char = player.Character; if not char then return end
+                        if mode == "walk" then
+                            local animate = char:FindFirstChild("Animate")
+                            if animate then
+                                if animate.walk and animate.walk:FindFirstChild("WalkAnim") then animate.walk.WalkAnim.AnimationId = id end
+                                if animate.run and animate.run:FindFirstChild("RunAnim") then animate.run.RunAnim.AnimationId = id end
+                                forceReloadAnimate(char)
+                            end
+                        elseif mode == "idle" then
+                            local animate = char:FindFirstChild("Animate")
+                            if animate and animate.idle then
+                                if animate.idle:FindFirstChild("Animation1") then animate.idle.Animation1.AnimationId = id end
+                                if animate.idle:FindFirstChild("Animation2") then animate.idle.Animation2.AnimationId = id end
+                                forceReloadAnimate(char)
+                            end
+                        else
+                            local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+                            local animator = hum:FindFirstChildOfClass("Animator"); if not animator then return end
+                            local anim = Instance.new("Animation"); anim.AnimationId = id
+                            local track = animator:LoadAnimation(anim); track:Play()
+                        end
+                    end)
+                else gui.Enabled = true end
+            else if gui then gui.Enabled = false end end
+        end)
+    end
+
+    -- ========== ЗАГОЛОВОК ==========
+    local defaultFilterBtn = Instance.new("TextButton")
+    defaultFilterBtn.Name = "DefaultFilterBtn"
+    defaultFilterBtn.Size = UDim2.new(0, 40, 0, 24)
+    defaultFilterBtn.Position = UDim2.new(0, 2, 0.5, -12)
+    defaultFilterBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+    defaultFilterBtn.Text = "Default"
+    defaultFilterBtn.TextScaled = true
+    defaultFilterBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    defaultFilterBtn.Font = Enum.Font.SourceSansBold
+    defaultFilterBtn.Parent = titleBar
+    local dfc = Instance.new("UICorner"); dfc.CornerRadius = UDim.new(0, 6); dfc.Parent = defaultFilterBtn
+
+    local bestScriptsBtn = Instance.new("TextButton")
+    bestScriptsBtn.Name = "BestScriptsBtn"
+    bestScriptsBtn.Size = UDim2.new(0, 70, 0, 24)
+    bestScriptsBtn.Position = UDim2.new(1, -250, 0.5, -12)
+    bestScriptsBtn.BackgroundColor3 = Color3.fromRGB(100, 50, 180)
+    bestScriptsBtn.Text = "Best scripts"
+    bestScriptsBtn.TextScaled = true
+    bestScriptsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    bestScriptsBtn.Font = Enum.Font.SourceSansBold
+    bestScriptsBtn.Parent = titleBar
+    local bsc = Instance.new("UICorner"); bsc.CornerRadius = UDim.new(0, 6); bsc.Parent = bestScriptsBtn
+
+    local notFeBtn = Instance.new("TextButton")
+    notFeBtn.Name = "NotFeBtn"
+    notFeBtn.Size = UDim2.new(0, 42, 0, 24)
+    notFeBtn.Position = UDim2.new(1, -176, 0.5, -12)
+    notFeBtn.BackgroundColor3 = Color3.fromRGB(180, 80, 0)
+    notFeBtn.Text = "Not FE"
+    notFeBtn.TextScaled = true
+    notFeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notFeBtn.Font = Enum.Font.SourceSansBold
+    notFeBtn.Parent = titleBar
+    local nfc2 = Instance.new("UICorner"); nfc2.CornerRadius = UDim.new(0, 6); nfc2.Parent = notFeBtn
+
+    local versionLabel = Instance.new("TextLabel")
+    versionLabel.Size = UDim2.new(0, 14, 1, 0)
+    versionLabel.Position = UDim2.new(1, -130, 0, 0)
+    versionLabel.BackgroundTransparency = 1
+    versionLabel.Text = "v55"
+    versionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    versionLabel.TextScaled = true
+    versionLabel.Font = Enum.Font.SourceSansBold
+    versionLabel.TextXAlignment = Enum.TextXAlignment.Center
+    versionLabel.Parent = titleBar
+
+    local starredFilterBtn = Instance.new("TextButton")
+    starredFilterBtn.Name = "StarredFilterBtn"
+    starredFilterBtn.Size = UDim2.new(0, 68, 0, 24)
+    starredFilterBtn.Position = UDim2.new(1, -105, 0.5, -12)
+    starredFilterBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    starredFilterBtn.Text = "With a star"
+    starredFilterBtn.TextScaled = true
+    starredFilterBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    starredFilterBtn.Font = Enum.Font.SourceSansBold
+    starredFilterBtn.Parent = titleBar
+    local sfc = Instance.new("UICorner"); sfc.CornerRadius = UDim.new(0, 6); sfc.Parent = starredFilterBtn
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 28, 0, 28)
+    closeBtn.Position = UDim2.new(1, -32, 0.5, -14)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    closeBtn.TextSize = 18
+    closeBtn.Font = Enum.Font.SourceSansBold
+    closeBtn.Parent = titleBar
+
+    makeDraggable(mainFrame, titleBar)
+
+    closeBtn.MouseButton1Click:Connect(function() mainFrame.Visible = false; minimizedImage.Visible = true end)
+    minimizedImage.MouseButton1Click:Connect(function() minimizedImage.Visible = false; mainFrame.Visible = true end)
+
+    defaultFilterBtn.MouseButton1Click:Connect(function()
+        currentFilter = "default"
+        applyFilter()
+        defaultFilterBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+        starredFilterBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end)
+
+    starredFilterBtn.MouseButton1Click:Connect(function()
+        currentFilter = "starred"
+        applyFilter()
+        defaultFilterBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        starredFilterBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+    end)
+
+    -- ========== BEST SCRIPTS PANEL ==========
+    local bestScriptsPanelGui = nil
+    local function openBestScriptsPanel()
+        if bestScriptsPanelGui then
+            bestScriptsPanelGui.Enabled = true
+            return
+        end
+        bestScriptsPanelGui = Instance.new("ScreenGui")
+        bestScriptsPanelGui.Name = "BestScriptsGui"
+        bestScriptsPanelGui.ResetOnSpawn = false
+        bestScriptsPanelGui.DisplayOrder = 50
+        bestScriptsPanelGui.Parent = playerGui
+
+        local pFrame = Instance.new("Frame")
+        pFrame.Size = UDim2.new(0, 300, 0, 240)
+        pFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
+        pFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        pFrame.BorderSizePixel = 0; pFrame.Active = true; pFrame.Parent = bestScriptsPanelGui
+        local pfc = Instance.new("UICorner"); pfc.CornerRadius = UDim.new(0, 10); pfc.Parent = pFrame
+
+        local pTitleBar = Instance.new("Frame")
+        pTitleBar.Size = UDim2.new(1, 0, 0, 35)
+        pTitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        pTitleBar.BorderSizePixel = 0; pTitleBar.Parent = pFrame
+        local ptc = Instance.new("UICorner"); ptc.CornerRadius = UDim.new(0, 10); ptc.Parent = pTitleBar
+
+        local pTitle = Instance.new("TextLabel")
+        pTitle.Size = UDim2.new(1, -50, 1, 0); pTitle.Position = UDim2.new(0, 10, 0, 0)
+        pTitle.BackgroundTransparency = 1; pTitle.Text = "Best scripts"
+        pTitle.TextColor3 = Color3.fromRGB(255, 255, 255); pTitle.TextSize = 16
+        pTitle.Font = Enum.Font.SourceSansBold; pTitle.TextXAlignment = Enum.TextXAlignment.Left
+        pTitle.Parent = pTitleBar
+
+        local pClose = Instance.new("TextButton")
+        pClose.Size = UDim2.new(0, 30, 0, 30); pClose.Position = UDim2.new(1, -35, 0.5, -15)
+        pClose.BackgroundTransparency = 1; pClose.Text = "X"
+        pClose.TextColor3 = Color3.fromRGB(255, 100, 100); pClose.TextSize = 18
+        pClose.Font = Enum.Font.SourceSansBold; pClose.Parent = pTitleBar
+        makeDraggable(pFrame, pTitleBar)
+        pClose.MouseButton1Click:Connect(function() bestScriptsPanelGui.Enabled = false end)
+
+        local pContainer = Instance.new("ScrollingFrame")
+        pContainer.Size = UDim2.new(1, -20, 1, -45)
+        pContainer.Position = UDim2.new(0, 10, 0, 40)
+        pContainer.BackgroundTransparency = 1
+        pContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        pContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        pContainer.ScrollBarThickness = 3
+        pContainer.Parent = pFrame
+        local pl = Instance.new("UIListLayout")
+        pl.Padding = UDim.new(0, 6); pl.SortOrder = Enum.SortOrder.LayoutOrder; pl.Parent = pContainer
+
+        local function addPanelScriptBtn(text, url, stateKey, order)
+            local bf = Instance.new("Frame")
+            bf.Size = UDim2.new(1, -4, 0, 42); bf.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            bf.BorderSizePixel = 0; bf.LayoutOrder = order; bf.Parent = pContainer
+            local bc = Instance.new("UICorner"); bc.CornerRadius = UDim.new(0, 6); bc.Parent = bf
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, -26, 1, 0); b.BackgroundTransparency = 1
+            b.Text = text; b.TextColor3 = Color3.fromRGB(255, 255, 255); b.TextSize = 13
+            b.Font = Enum.Font.SourceSansBold; b.TextXAlignment = Enum.TextXAlignment.Left
+            b.TextTruncate = Enum.TextTruncate.AtEnd; b.Parent = bf
+            local ind = createIndicator(bf)
+            local used = false
+            if stateKey and _G[stateKey] then
+                used = true
+                b.TextColor3 = Color3.fromRGB(150, 150, 150)
+                setIndicatorState(ind, true)
+            end
+            b.MouseButton1Click:Connect(function()
+                if used then return end
+                used = true
+                if stateKey then _G[stateKey] = true end
+                setIndicatorState(ind, true)
+                b.TextColor3 = Color3.fromRGB(150, 150, 150)
+                task.spawn(function() loadstring(game:HttpGet(url))() end)
+            end)
+        end
+
+        addPanelScriptBtn("LocalPlayer Hub (onarchawee)", "https://raw.githubusercontent.com/saninarchawee-prog/Scp-3008/refs/heads/main/lua", "localPlayerHubUsed", 1)
+        addPanelScriptBtn("YARHM HUB for brookhaven (Imperial)", "https://scriptblox.com/raw/Universal-Script-YARHM-12403", "yarhmBrookhavenUsed", 2)
+        addPanelScriptBtn("AFEM MAX (Imperial)", "https://scriptblox.com/raw/Universal-Script-AFEM-Max-LITE-NO-KEY-226299", "afemMaxUsed", 3)
+        addPanelScriptBtn("nameless admin (BARTAP)", "https://gitlab.com/ltseverydayyou/Nameless-Admin/-/raw/main/NAVerPicker.luau", "namelessAdminUsed", 4)
+    end
+
+    bestScriptsBtn.MouseButton1Click:Connect(openBestScriptsPanel)
+
+    -- ========== SERVER ADMIN MOVEMENT CONTROLS ==========
+    local adminMoveGui = nil
+    local function pressKey(keyCode)
+        local ok = pcall(function()
+            game:GetService("VirtualInputManager"):SendKeyEvent(true, keyCode, false, game)
+        end)
+        if not ok then
+            pcall(function() keypress(keyCode) end)
+        end
+    end
+    local function releaseKey(keyCode)
+        local ok = pcall(function()
+            game:GetService("VirtualInputManager"):SendKeyEvent(false, keyCode, false, game)
+        end)
+        if not ok then
+            pcall(function() keyrelease(keyCode) end)
+        end
+    end
+    local function createAdminMoveControls()
+        if adminMoveGui then adminMoveGui.Enabled = true; return end
+        adminMoveGui = Instance.new("ScreenGui")
+        adminMoveGui.Name = "ServerAdminMoveGui"
+        adminMoveGui.ResetOnSpawn = false
+        adminMoveGui.DisplayOrder = 100
+        adminMoveGui.Parent = playerGui
+
+        local function makeBtn(text, keyCode, size, pos)
+            local btn = Instance.new("TextButton")
+            btn.Size = size
+            btn.Position = pos
+            btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            btn.BackgroundTransparency = 0.25
+            btn.Text = text
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.TextSize = 24
+            btn.Font = Enum.Font.SourceSansBold
+            btn.Parent = adminMoveGui
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, 10)
+            corner.Parent = btn
+            local stroke = Instance.new("UIStroke")
+            stroke.Color = Color3.fromRGB(255, 255, 255)
+            stroke.Thickness = 2
+            stroke.Transparency = 0.3
+            stroke.Parent = btn
+            btn.MouseButton1Down:Connect(function() pressKey(keyCode) end)
+            btn.MouseButton1Up:Connect(function() releaseKey(keyCode) end)
+            btn.MouseLeave:Connect(function() releaseKey(keyCode) end)
+            return btn
+        end
+
+        local btnSize = UDim2.new(0, 60, 0, 60)
+        makeBtn("S", Enum.KeyCode.S, btnSize, UDim2.new(0, 90, 1, -130))
+        makeBtn("A", Enum.KeyCode.A, btnSize, UDim2.new(0, 20, 1, -130))
+        makeBtn("D", Enum.KeyCode.D, btnSize, UDim2.new(0, 160, 1, -130))
+        makeBtn("W", Enum.KeyCode.W, btnSize, UDim2.new(0, 90, 1, -200))
+        makeBtn("Z", Enum.KeyCode.Z, btnSize, UDim2.new(1, -90, 0.7, -30))
+    end
+
+    -- ========== NOT FE PANEL ==========
+    local notFePanelGui = nil
+    local function openNotFePanel()
+        if notFePanelGui then
+            notFePanelGui.Enabled = true
+            return
+        end
+        notFePanelGui = Instance.new("ScreenGui")
+        notFePanelGui.Name = "NotFeGui"
+        notFePanelGui.ResetOnSpawn = false
+        notFePanelGui.DisplayOrder = 50
+        notFePanelGui.Parent = playerGui
+
+        local pFrame = Instance.new("Frame")
+        pFrame.Size = UDim2.new(0, 300, 0, 240)
+        pFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
+        pFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        pFrame.BorderSizePixel = 0; pFrame.Active = true; pFrame.Parent = notFePanelGui
+        local pfc = Instance.new("UICorner"); pfc.CornerRadius = UDim.new(0, 10); pfc.Parent = pFrame
+
+        local pTitleBar = Instance.new("Frame")
+        pTitleBar.Size = UDim2.new(1, 0, 0, 35)
+        pTitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        pTitleBar.BorderSizePixel = 0; pTitleBar.Parent = pFrame
+        local ptc = Instance.new("UICorner"); ptc.CornerRadius = UDim.new(0, 10); ptc.Parent = pTitleBar
+
+        local pTitle = Instance.new("TextLabel")
+        pTitle.Size = UDim2.new(1, -50, 1, 0); pTitle.Position = UDim2.new(0, 10, 0, 0)
+        pTitle.BackgroundTransparency = 1; pTitle.Text = "Not FE"
+        pTitle.TextColor3 = Color3.fromRGB(255, 255, 255); pTitle.TextSize = 16
+        pTitle.Font = Enum.Font.SourceSansBold; pTitle.TextXAlignment = Enum.TextXAlignment.Left
+        pTitle.Parent = pTitleBar
+
+        local pClose = Instance.new("TextButton")
+        pClose.Size = UDim2.new(0, 30, 0, 30); pClose.Position = UDim2.new(1, -35, 0.5, -15)
+        pClose.BackgroundTransparency = 1; pClose.Text = "X"
+        pClose.TextColor3 = Color3.fromRGB(255, 100, 100); pClose.TextSize = 18
+        pClose.Font = Enum.Font.SourceSansBold; pClose.Parent = pTitleBar
+        makeDraggable(pFrame, pTitleBar)
+        pClose.MouseButton1Click:Connect(function() notFePanelGui.Enabled = false end)
+
+        local pContainer = Instance.new("ScrollingFrame")
+        pContainer.Size = UDim2.new(1, -20, 1, -45)
+        pContainer.Position = UDim2.new(0, 10, 0, 40)
+        pContainer.BackgroundTransparency = 1
+        pContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        pContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        pContainer.ScrollBarThickness = 3
+        pContainer.Parent = pFrame
+        local pl = Instance.new("UIListLayout")
+        pl.Padding = UDim.new(0, 6); pl.SortOrder = Enum.SortOrder.LayoutOrder; pl.Parent = pContainer
+
+        local function addPanelScriptBtn(text, url, stateKey, order, extraCallback)
+            local bf = Instance.new("Frame")
+            bf.Size = UDim2.new(1, -4, 0, 42); bf.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            bf.BorderSizePixel = 0; bf.LayoutOrder = order; bf.Parent = pContainer
+            local bc = Instance.new("UICorner"); bc.CornerRadius = UDim.new(0, 6); bc.Parent = bf
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, -26, 1, 0); b.BackgroundTransparency = 1
+            b.Text = text; b.TextColor3 = Color3.fromRGB(255, 255, 255); b.TextSize = 13
+            b.Font = Enum.Font.SourceSansBold; b.TextXAlignment = Enum.TextXAlignment.Left
+            b.TextTruncate = Enum.TextTruncate.AtEnd; b.Parent = bf
+            local ind = createIndicator(bf)
+            local used = false
+            if stateKey and _G[stateKey] then
+                used = true
+                b.TextColor3 = Color3.fromRGB(150, 150, 150)
+                setIndicatorState(ind, true)
+            end
+            b.MouseButton1Click:Connect(function()
+                if used then return end
+                used = true
+                if stateKey then _G[stateKey] = true end
+                setIndicatorState(ind, true)
+                b.TextColor3 = Color3.fromRGB(150, 150, 150)
+                task.spawn(function()
+                    loadstring(game:HttpGet(url))()
+                    if extraCallback then extraCallback() end
+                end)
+            end)
+        end
+
+        addPanelScriptBtn("ServerH#cker-X (Yah_ImTory)", "https://raw.githubusercontent.com/Jskfhggjxu/My-Script/refs/heads/main/ServerHacker-X.lua", "serverHackerXUsed", 1)
+        addPanelScriptBtn("Server Admin (iwashuman)", "https://raw.githubusercontent.com/ilikeices/script/refs/heads/main/serveradmin.luau", "serverAdminUsed", 2, createAdminMoveControls)
+        addPanelScriptBtn("Star glitcher (Sam)", "https://gist.githubusercontent.com/nicolasanacletoluz121-collab/def7be25a62cf6ef5225470555f44b79/raw", "starGlitcherUsed", 3)
+        addPanelScriptBtn("Axirian glitcher (Sam)", "https://raw.githubusercontent.com/Jskfhggjxu/My-Script/refs/heads/main/Anarchy.txt.lua", "axirianGlitcherUsed", 4)
+    end
+
+    notFeBtn.MouseButton1Click:Connect(openNotFePanel)
+
+    -- ========== ОСНОВНЫЕ КНОПКИ ==========
+    makeAnimInputTool("Custom Animation 1", -4, "play")
+    makeAnimInputTool("Custom Animation 2", -3, "play")
+    makeAnimInputTool("Custom Walk Animation", -2, "walk")
+    makeAnimInputTool("Custom Idle Animation", -1, "idle")
+
+    local dashFrame, dashButton = makeMenuButton("Dash Gui (R15)", 1)
+    local dashIndicator = createIndicator(dashFrame)
+    dashButton.MouseButton1Click:Connect(function()
+        dashEnabled = not dashEnabled; setIndicatorState(dashIndicator, dashEnabled)
+        if dashEnabled then
+            if not dashGui then
+                dashGui = Instance.new("ScreenGui"); dashGui.Name = "DashGui"; dashGui.ResetOnSpawn = false; dashGui.Parent = playerGui
+                local imgBtn = Instance.new("ImageButton")
+                imgBtn.Size = UDim2.new(0, 80, 0, 80); imgBtn.Position = UDim2.new(0.5, -40, 0.8, -40)
+                imgBtn.Image = DASH_IMAGE_ID; imgBtn.BackgroundTransparency = 1; imgBtn.Parent = dashGui
+                makeDraggable(imgBtn)
+                imgBtn.MouseButton1Click:Connect(function()
+                    local char = player.Character; if not char then return end
+                    local hum = char:FindFirstChildOfClass("Humanoid"); local root = char:FindFirstChild("HumanoidRootPart")
+                    if not hum or not root then return end
+                    playAnimation(hum, DASH_ANIMATION_ID, DASH_ANIM_TIME)
+                    applyVelocity(root, DASH_VELOCITY_POWER, DASH_VELOCITY_TIME)
+                end)
+            else dashGui.Enabled = true end
+        else if dashGui then dashGui.Enabled = false end end
+    end)
+
+    local noclipFrame, noclipButton = makeMenuButton("Noclip", 2)
+    local noclipIndicator = createIndicator(noclipFrame)
+    noclipButton.MouseButton1Click:Connect(function()
+        noclipEnabled = not noclipEnabled; setIndicatorState(noclipIndicator, noclipEnabled)
+        if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+        if noclipEnabled then
+            noclipConn = RunService.Stepped:Connect(function()
+                local char = player.Character; if not char then return end
+                for _, p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+            end)
+        else
+            local char = player.Character
+            if char then for _, p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end end
+        end
+    end)
+
+    local musicFrame, musicButton = makeMenuButton("Music gui", 3)
+    local musicIndicator = createIndicator(musicFrame)
+    local function createMusicGui()
+        if musicGui then return musicGui end
+        local mg = Instance.new("ScreenGui"); mg.Name = "MusicGui"; mg.ResetOnSpawn = false; mg.Parent = playerGui
+        local mFrame = Instance.new("Frame")
+        mFrame.Size = UDim2.new(0, 240, 0, 300); mFrame.Position = UDim2.new(0.5, -120, 0.5, -150)
+        mFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25); mFrame.BorderSizePixel = 0; mFrame.Active = true; mFrame.Parent = mg
+        local mcc = Instance.new("UICorner"); mcc.CornerRadius = UDim.new(0, 10); mcc.Parent = mFrame
+        local mTitleBar = Instance.new("Frame")
+        mTitleBar.Size = UDim2.new(1, 0, 0, 35); mTitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        mTitleBar.BorderSizePixel = 0; mTitleBar.Parent = mFrame
+        local mtc = Instance.new("UICorner"); mtc.CornerRadius = UDim.new(0, 10); mtc.Parent = mTitleBar
+        local mTitle = Instance.new("TextLabel")
+        mTitle.Size = UDim2.new(1, -10, 1, 0); mTitle.Position = UDim2.new(0, 10, 0, 0)
+        mTitle.BackgroundTransparency = 1; mTitle.Text = "Music GUI"
+        mTitle.TextColor3 = Color3.fromRGB(255, 255, 255); mTitle.TextSize = 16
+        mTitle.Font = Enum.Font.SourceSansBold; mTitle.TextXAlignment = Enum.TextXAlignment.Left; mTitle.Parent = mTitleBar
+        makeDraggable(mFrame, mTitleBar)
+        local mContainer = Instance.new("ScrollingFrame")
+        mContainer.Size = UDim2.new(1, -15, 1, -45); mContainer.Position = UDim2.new(0, 8, 0, 40)
+        mContainer.BackgroundTransparency = 1; mContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+        mContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y; mContainer.ScrollBarThickness = 3; mContainer.Parent = mFrame
+        local ml = Instance.new("UIListLayout"); ml.Padding = UDim.new(0, 6); ml.SortOrder = Enum.SortOrder.LayoutOrder; ml.Parent = mContainer
+        local function createAudioButton(name, soundId, playbackSpeed, order, startTime)
+            local bf = Instance.new("Frame")
+            bf.Size = UDim2.new(1, -4, 0, 42); bf.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            bf.BorderSizePixel = 0; bf.LayoutOrder = order; bf.Parent = mContainer
+            local bc = Instance.new("UICorner"); bc.CornerRadius = UDim.new(0, 6); bc.Parent = bf
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, 0, 1, 0); b.BackgroundTransparency = 1
+            b.Text = name; b.TextColor3 = Color3.fromRGB(255, 255, 255); b.TextSize = 13
+            b.Font = Enum.Font.SourceSansBold; b.TextXAlignment = Enum.TextXAlignment.Left; b.Parent = bf
+            b.MouseButton1Click:Connect(function()
+                local existing = mFrame:FindFirstChild("CurrentAudio"); if existing then existing:Destroy() end
+                if soundId == "0" or soundId == 0 then return end
+                local sound = Instance.new("Sound")
+                sound.Name = "CurrentAudio"; sound.SoundId = "rbxassetid://" .. tostring(soundId)
+                sound.PlaybackSpeed = playbackSpeed or 1; sound.Volume = 1; sound.Looped = false
+                sound.Parent = mFrame; sound:Play()
+                if startTime and startTime > 0 then task.wait(0.05); sound.TimePosition = startTime end
+            end)
+        end
+        createAudioButton("Megalovania (Undertale)", "130739231402486", 0.5, 1)
+        createAudioButton("Screwed (Strident Crisis)", "107787585135366", 1, 2)
+        createAudioButton("??? (Strident Crisis)", "130266937366123", 1, 3)
+        createAudioButton("Excuse me sir", "116266629145930", 1, 4)
+        createAudioButton("Finale Of The Unyielding", "134634901847028", 1, 5)
+        createAudioButton("Cob", "135732775388387", 1, 6, 1)
+        createAudioButton("Agony", "121739657226914", 1, 7)
+        createAudioButton("Malice", "114325987220832", 1, 8)
+        createAudioButton("Physicalismness", "97601894879020", 1, 9)
+        createAudioButton("Musor drop", "104757236155470", 1, 10)
+        createAudioButton("Musor drop 2", "99789469646939", 1.05, 11)
+        createAudioButton("funeral (volume warning!)", "74466494261590", 1, 12)
+        createAudioButton("The world revolving", "123209129726094", 0.85, 13)
+        createAudioButton("discruption", "112611779768924", 1, 15)
+        createAudioButton("Scopomania", "130939602828398", 1, 16)
+        createAudioButton("PhonoPhobia", "96216058815478", 1.05, 17)
+        createAudioButton("Unfairness", "128690634576921", 1, 18)
+        createAudioButton("OPPOSITION", "101633109489172", 1, 19)
+        createAudioButton("Thearchy but bad", "102456250677958", 1, 20)
+        createAudioButton("indignancy", "78251743621877", 1.05, 21)
+        createAudioButton("off all", "0", 1, 22)
+        musicGui = mg; return mg
+    end
+    musicButton.MouseButton1Click:Connect(function()
+        musicGuiEnabled = not musicGuiEnabled; setIndicatorState(musicIndicator, musicGuiEnabled)
+        if musicGuiEnabled then createMusicGui().Enabled = true
+        elseif musicGui then musicGui.Enabled = false end
+    end)
+
+    local sonicFrame, sonicButton = makeMenuButton("Sonic Dash", 4)
+    local sonicIndicator = createIndicator(sonicFrame)
+    local function sonicStateValid()
+        if not sonicActive then return false end
+        return sonicVelocity and sonicVelocity.Parent ~= nil
+    end
+    local function stopSonicDash()
+        if sonicVelocity and sonicVelocity.Parent then sonicVelocity:Destroy() end
+        if sonicTrack then sonicTrack:Stop() end
+        sonicVelocity = nil; sonicTrack = nil; sonicActive = false
+    end
+    local function startSonicDash()
+        local char = player.Character; if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid"); local root = char:FindFirstChild("HumanoidRootPart")
+        if not hum or not root then return end
+        sonicTrack = playAnimation(hum, DASH_ANIMATION_ID, 0)
+        sonicVelocity = applyVelocity(root, DASH_VELOCITY_POWER, nil)
+        sonicActive = true
+    end
+    sonicButton.MouseButton1Click:Connect(function()
+        sonicGuiEnabled = not sonicGuiEnabled; setIndicatorState(sonicIndicator, sonicGuiEnabled)
+        if sonicGuiEnabled then
+            if not sonicGui then
+                sonicGui = Instance.new("ScreenGui"); sonicGui.Name = "SonicDashGui"; sonicGui.ResetOnSpawn = false; sonicGui.Parent = playerGui
+                local imgBtn = Instance.new("ImageButton")
+                imgBtn.Size = UDim2.new(0, 80, 0, 80); imgBtn.Position = UDim2.new(0.5, -40, 0.7, -40)
+                imgBtn.Image = SONIC_IMAGE_ID; imgBtn.BackgroundTransparency = 1; imgBtn.Parent = sonicGui
+                makeDraggable(imgBtn)
+                imgBtn.MouseButton1Click:Connect(function()
+                    if sonicStateValid() then stopSonicDash() else sonicActive = false; startSonicDash() end
+                end)
+            else sonicGui.Enabled = true end
+        else
+            if sonicGui then sonicGui.Enabled = false end
+            if sonicStateValid() then stopSonicDash() end
+        end
+    end)
+
+    local botFrame, botButton = makeMenuButton("Bot Animation", 5)
+    local botIndicator = createIndicator(botFrame)
+    botButton.MouseButton1Click:Connect(function()
+        botGuiEnabled = not botGuiEnabled; setIndicatorState(botIndicator, botGuiEnabled)
+        if botGuiEnabled then
+            if not botGui then
+                botGui = Instance.new("ScreenGui"); botGui.Name = "BotAnimGui"; botGui.ResetOnSpawn = false; botGui.Parent = playerGui
+                local imgBtn = Instance.new("ImageButton")
+                imgBtn.Size = UDim2.new(0, 80, 0, 80); imgBtn.Position = UDim2.new(0.5, -40, 0.6, -40)
+                imgBtn.Image = BOT_IMAGE_ID; imgBtn.BackgroundTransparency = 1; imgBtn.Parent = botGui
+                makeDraggable(imgBtn)
+                imgBtn.MouseButton1Click:Connect(function()
+                    local char = player.Character; if not char then return end
+                    local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+                    playAnimation(hum, BOT_ANIMATION_ID, 0)
+                end)
+            else botGui.Enabled = true end
+        else if botGui then botGui.Enabled = false end end
+    end)
+
+    local noliFrame, noliButton = makeMenuButton("Noli (R15) (Mreyes)", 6)
+    local noliIndicator = createIndicator(noliFrame)
+    if noliLoaded then setIndicatorState(noliIndicator, true); noliButton.TextColor3 = Color3.fromRGB(150,150,150) end
+    noliButton.MouseButton1Click:Connect(function()
+        if noliLoaded then return end
+        noliLoaded = true; setIndicatorState(noliIndicator, true); noliButton.TextColor3 = Color3.fromRGB(150, 150, 150)
+        task.spawn(function()
+            local _UserInputService = game:GetService("UserInputService"); local _RunService = game:GetService("RunService")
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid"); local root = character:WaitForChild("HumanoidRootPart")
+            local EMOTE_ID = "rbxassetid://119380285634530"; local rushing = false
+            local sGui = Instance.new("ScreenGui"); sGui.Name = "VoidRushGui"; sGui.ResetOnSpawn = false; sGui.Parent = playerGui
+            local rushButton = Instance.new("TextButton")
+            rushButton.Size = UDim2.new(0, 60, 0, 60); rushButton.Position = UDim2.new(0, 20, 0, 100)
+            rushButton.BackgroundColor3 = Color3.fromRGB(20, 20, 50); rushButton.Text = "RUSH"
+            rushButton.TextColor3 = Color3.new(1,1,1); rushButton.TextScaled = true
+            rushButton.Font = Enum.Font.SourceSansBold; rushButton.Parent = sGui
+            local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 12); c.Parent = rushButton
+            local function startRush()
+                if rushing then return end
+                rushing = true
+                local anim = Instance.new("Animation"); anim.AnimationId = EMOTE_ID
+                local track = humanoid:LoadAnimation(anim); track.Looped = true; track:Play()
+                local conn = _RunService.Heartbeat:Connect(function()
+                    if not root or not root.Parent then return end
+                    root.CFrame = root.CFrame + root.CFrame.LookVector * 43 * 0.033
+                end)
+                task.delay(4.4, function() rushing = false; track:Stop(); conn:Disconnect() end)
+            end
+            rushButton.MouseButton1Click:Connect(startRush)
+            _UserInputService.InputBegan:Connect(function(input, gp) if gp then return end; if input.KeyCode == Enum.KeyCode.Q then startRush() end end)
+        end)
+    end)
+
+    local adminFrame, adminButton = makeMenuButton("Admin Script (1 time)", 7)
+    local adminIndicator = createIndicator(adminFrame)
+    local adminIcon = Instance.new("ImageLabel")
+    adminIcon.Size = UDim2.new(0, 24, 0, 24); adminIcon.Position = UDim2.new(0, 8, 0.5, -12)
+    adminIcon.BackgroundTransparency = 1; adminIcon.Image = ADMIN_IMAGE_ID; adminIcon.Parent = adminFrame
+    adminButton.TextXAlignment = Enum.TextXAlignment.Left; adminButton.Text = "        Admin Script (1 time)"
+    if adminUsed then adminButton.Text = "        Admin Script (Used)"; adminButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(adminIndicator, true) end
+    adminButton.MouseButton1Click:Connect(function()
+        if adminUsed then return end
+        confirmGui = Instance.new("ScreenGui"); confirmGui.Name = "ConfirmGui"; confirmGui.ResetOnSpawn = false; confirmGui.Parent = playerGui
+        local pf = Instance.new("Frame"); pf.Size = UDim2.new(0, 260, 0, 130); pf.Position = UDim2.new(0.5, -130, 0.5, -65)
+        pf.BackgroundColor3 = Color3.fromRGB(30, 30, 30); pf.BorderSizePixel = 0; pf.Parent = confirmGui
+        local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,10); c.Parent = pf
+        local stroke = Instance.new("UIStroke"); stroke.Color = Color3.fromRGB(255,0,0); stroke.Thickness = 3; stroke.Transparency = 0.2; stroke.Parent = pf
+        TweenService:Create(stroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.8}):Play()
+        local tl = Instance.new("TextLabel"); tl.Size = UDim2.new(1, -20, 0, 60); tl.Position = UDim2.new(0, 10, 0, 5)
+        tl.BackgroundTransparency = 1; tl.Text = "This script download something on your device! Do you want to Run This Script?"
+        tl.TextColor3 = Color3.fromRGB(255,255,255); tl.TextWrapped = true; tl.Font = Enum.Font.SourceSansBold; tl.TextSize = 13; tl.Parent = pf
+        local yes = Instance.new("TextButton"); yes.Size = UDim2.new(0, 90, 0, 35); yes.Position = UDim2.new(0, 15, 1, -45)
+        yes.BackgroundColor3 = Color3.fromRGB(200,0,0); yes.Text = "Yes"; yes.TextColor3 = Color3.fromRGB(255,255,255)
+        yes.Font = Enum.Font.SourceSansBold; yes.TextSize = 14; yes.Parent = pf
+        local yc = Instance.new("UICorner"); yc.CornerRadius = UDim.new(0,6); yc.Parent = yes
+        local no = Instance.new("TextButton"); no.Size = UDim2.new(0, 90, 0, 35); no.Position = UDim2.new(1, -105, 1, -45)
+        no.BackgroundColor3 = Color3.fromRGB(100,100,100); no.Text = "No"; no.TextColor3 = Color3.fromRGB(255,255,255)
+        no.Font = Enum.Font.SourceSansBold; no.TextSize = 14; no.Parent = pf
+        local nc = Instance.new("UICorner"); nc.CornerRadius = UDim.new(0,6); nc.Parent = no
+        local shake
+        shake = RunService.RenderStepped:Connect(function()
+            if not yes or not yes.Parent then if shake then shake:Disconnect() end; return end
+            yes.Position = UDim2.new(0, 15 + math.random(-3,3), 1, -45 + math.random(-3,3))
+        end)
+        no.MouseButton1Click:Connect(function() if shake then shake:Disconnect() end; confirmGui:Destroy() end)
+        yes.MouseButton1Click:Connect(function()
+            if shake then shake:Disconnect() end; confirmGui:Destroy()
+            adminUsed = true; adminButton.Text = "        Admin Script (Used)"; adminButton.TextColor3 = Color3.fromRGB(150,150,150)
+            setIndicatorState(adminIndicator, true)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/MelonsStuff/FEVerse/refs/heads/main/OpenSource/Admin.luau"))()
+        end)
+    end)
+
+    local dussekarFrame, dussekarButton = makeMenuButton("dussekar anims (Mreyes)", 8)
+    local dussekarIndicator = createIndicator(dussekarFrame)
+    if dussekarUsed then dussekarButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(dussekarIndicator, true) end
+    dussekarButton.MouseButton1Click:Connect(function()
+        if dussekarUsed then return end
+        dussekarUsed = true; setIndicatorState(dussekarIndicator, true); dussekarButton.TextColor3 = Color3.fromRGB(150, 150, 150)
+        task.spawn(function()
+            if not getgenv().Animator6DLoadedPro then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/gObl00x/Stuff/refs/heads/main/Animator6D.lua"))()
+                repeat task.wait() until getgenv().Animator6DLoadedPro
+            end
+            local _ = game:GetObjects("rbxassetid://114114602780711")[1]
+        end)
+    end)
+
+    local uiFrame, uiButton = makeMenuButton("ULTRA INSTINCT (credits to: eqahevhevr01)", 9, true)
+    local uiIndicator = createIndicator(uiFrame)
+    local uiCooldown = false
+    uiButton.MouseButton1Click:Connect(function()
+        if uiCooldown then return end
+        uiCooldown = true; setIndicatorState(uiIndicator, true)
+        task.spawn(function() loadstring(game:HttpGet("https://gist.githubusercontent.com/eqahevhevr01-alt/a43a6fc8a3fdc5d879b659e8cd64a594/raw/7daefe84e32a4dbb59390ba873cce9e2fce80af0/script.lua"))() end)
+        for i = 5, 1, -1 do
+            uiButton.Text = "ULTRA INSTINCT CD: " .. i; uiButton.TextColor3 = Color3.fromRGB(200,200,200)
+            uiFrame.BackgroundColor3 = Color3.fromRGB(100,0,0); task.wait(1)
+        end
+        uiButton.Text = "ULTRA INSTINCT (credits to: eqahevhevr01)"; uiButton.TextColor3 = Color3.fromRGB(255,255,255)
+        uiFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); setIndicatorState(uiIndicator, false); uiCooldown = false
+    end)
+
+    local tikiFrame, tikiButton = makeMenuButton("Tiki Tiki", 10)
+    tikiButton.MouseButton1Click:Connect(function()
+        local char = player.Character; if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid"); local root = char:FindFirstChild("HumanoidRootPart")
+        if not hum or not root then return end
+        local s = Instance.new("Sound"); s.SoundId = "rbxassetid://86081423726502"; s.Volume = 1; s.Parent = SoundService
+        SoundService:PlayLocalSound(s)
+        for _, p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+        local bv = Instance.new("BodyVelocity"); bv.Velocity = Vector3.new(0, 200, 0)
+        bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge); bv.Parent = root
+        task.delay(0.5, function() if bv and bv.Parent then bv.Velocity = Vector3.new(0, -200, 0) end end)
+        task.delay(3.0, function() if bv and bv.Parent then bv:Destroy() end; if hum and hum.Health > 0 then hum.Health = 0 end end)
+        task.delay(4.0, function()
+            local tg = Instance.new("ScreenGui"); tg.Name = "TikiImageGui"; tg.ResetOnSpawn = false; tg.IgnoreGuiInset = true; tg.Parent = playerGui
+            local img = Instance.new("ImageLabel"); img.Size = UDim2.new(1, 0, 1, 0); img.BackgroundTransparency = 1
+            img.Image = "rbxassetid://9839757971"; img.Parent = tg
+            task.wait(1); player:Kick("You cheated!")
+        end)
+    end)
+
+    makeScriptButton("spiderman (ri5282649)", 11, "https://gist.githubusercontent.com/ri5282649-dev/d98bee2a6a4a57442efaee93fa379cbb/raw", "spidermanUsed")
+    makeScriptButton("invicible fly (R6) (VersMandex)", 12, "https://pastebin.com/raw/Nn1x8a9S", "flyR6Used")
+
+    local npcFrame, npcButton = makeMenuButton("NPC Control (Im_patrick)", 13)
+    local npcIndicator = createIndicator(npcFrame)
+    if npcControlUsed then npcButton.Text = "NPC Control (Used)"; npcButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(npcIndicator, true) end
+    npcButton.MouseButton1Click:Connect(function()
+        if npcControlUsed then return end
+        confirmGui = Instance.new("ScreenGui"); confirmGui.Name = "ConfirmGui"; confirmGui.ResetOnSpawn = false; confirmGui.Parent = playerGui
+        local pf = Instance.new("Frame"); pf.Size = UDim2.new(0, 260, 0, 130); pf.Position = UDim2.new(0.5, -130, 0.5, -65)
+        pf.BackgroundColor3 = Color3.fromRGB(30,30,30); pf.BorderSizePixel = 0; pf.Parent = confirmGui
+        local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,10); c.Parent = pf
+        local stroke = Instance.new("UIStroke"); stroke.Color = Color3.fromRGB(255,0,0); stroke.Thickness = 3; stroke.Transparency = 0.2; stroke.Parent = pf
+        TweenService:Create(stroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.8}):Play()
+        local tl = Instance.new("TextLabel"); tl.Size = UDim2.new(1, -20, 0, 60); tl.Position = UDim2.new(0, 10, 0, 5)
+        tl.BackgroundTransparency = 1; tl.Text = "This script may contain a virus! Do not run it! Do so at your own risk! Do you want to run it?"
+        tl.TextColor3 = Color3.fromRGB(255,255,255); tl.TextWrapped = true; tl.Font = Enum.Font.SourceSansBold; tl.TextSize = 12; tl.Parent = pf
+        local yes = Instance.new("TextButton"); yes.Size = UDim2.new(0, 90, 0, 35); yes.Position = UDim2.new(0, 15, 1, -45)
+        yes.BackgroundColor3 = Color3.fromRGB(200,0,0); yes.Text = "Yes"; yes.TextColor3 = Color3.fromRGB(255,255,255)
+        yes.Font = Enum.Font.SourceSansBold; yes.TextSize = 14; yes.Parent = pf
+        local yc = Instance.new("UICorner"); yc.CornerRadius = UDim.new(0,6); yc.Parent = yes
+        local no = Instance.new("TextButton"); no.Size = UDim2.new(0, 90, 0, 35); no.Position = UDim2.new(1, -105, 1, -45)
+        no.BackgroundColor3 = Color3.fromRGB(100,100,100); no.Text = "No"; no.TextColor3 = Color3.fromRGB(255,255,255)
+        no.Font = Enum.Font.SourceSansBold; no.TextSize = 14; no.Parent = pf
+        local nc = Instance.new("UICorner"); nc.CornerRadius = UDim.new(0,6); nc.Parent = no
+        local shake
+        shake = RunService.RenderStepped:Connect(function()
+            if not yes or not yes.Parent then if shake then shake:Disconnect() end; return end
+            yes.Position = UDim2.new(0, 15 + math.random(-3,3), 1, -45 + math.random(-3,3))
+        end)
+        no.MouseButton1Click:Connect(function() if shake then shake:Disconnect() end; confirmGui:Destroy() end)
+        yes.MouseButton1Click:Connect(function()
+            if shake then shake:Disconnect() end; confirmGui:Destroy()
+            npcControlUsed = true; npcButton.Text = "NPC Control (Used)"; npcButton.TextColor3 = Color3.fromRGB(150,150,150)
+            setIndicatorState(npcIndicator, true)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/randomstring0/qwertys/refs/heads/main/qwerty8.lua"))()
+        end)
+    end)
+
+    makeScriptButton("invicible fly (R15) (kerzence...)", 14, "https://scriptblox.com/raw/Universal-Script-Invicicible-Flight-R15-49983", "flyR15Used")
+    makeScriptButton("Mega Fire Storm Hub (eqahev...)", 15, "https://gist.githubusercontent.com/eqahevhevr01-alt/387f68585aa1a64ea938c0bef10e0fcb/raw/ddebb7a22c8d2c4128deb034b58849373ca007ac/NexusOmegaV75.lua", "megaFireStormUsed")
+    makeScriptButton("YARHM Hub (credits to: Imperial)", 16, "https://scriptblox.com/raw/Universal-Script-YARHM-12403", "yarhmUsed")
+    makeScriptButton("Genlwame Music Hub (Bdly)", 17, "https://pastebin.com/raw/WqTGRGm8", "genlwameUsed")
+
+    local infJumpFrame, infJumpButton = makeMenuButton("inf jump", 18)
+    local infJumpIndicator = createIndicator(infJumpFrame)
+    local jumpConn
+    infJumpButton.MouseButton1Click:Connect(function()
+        infJumpEnabled = not infJumpEnabled; setIndicatorState(infJumpIndicator, infJumpEnabled)
+        if infJumpEnabled then
+            if not jumpConn then
+                jumpConn = UserInputService.JumpRequest:Connect(function()
+                    if infJumpEnabled then
+                        local char = player.Character
+                        if char then
+                            local hum = char:FindFirstChildOfClass("Humanoid")
+                            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+                        end
+                    end
+                end)
+            end
+        else
+            if jumpConn then jumpConn:Disconnect(); jumpConn = nil end
+        end
+    end)
+
+    local speedFrame, speedButton = makeMenuButton("Speed Multiplier", 19)
+    local speedIndicator = createIndicator(speedFrame)
+    speedButton.MouseButton1Click:Connect(function()
+        speedGuiEnabled = not speedGuiEnabled; setIndicatorState(speedIndicator, speedGuiEnabled)
+        if speedGuiEnabled then
+            if not speedGui then
+                speedGui = Instance.new("ScreenGui"); speedGui.Name = "SpeedMultiplierGui"; speedGui.ResetOnSpawn = false; speedGui.Parent = playerGui
+                local sMain = Instance.new("Frame"); sMain.Size = UDim2.new(0, 280, 0, 150)
+                sMain.Position = UDim2.new(0.5, -140, 0.5, -75); sMain.BackgroundColor3 = Color3.fromRGB(25,25,25)
+                sMain.BorderSizePixel = 0; sMain.Active = true; sMain.Parent = speedGui
+                local sc = Instance.new("UICorner"); sc.CornerRadius = UDim.new(0,10); sc.Parent = sMain
+                local tb = Instance.new("Frame"); tb.Size = UDim2.new(1, 0, 0, 35)
+                tb.BackgroundColor3 = Color3.fromRGB(40,40,40); tb.BorderSizePixel = 0; tb.Parent = sMain
+                local tbc = Instance.new("UICorner"); tbc.CornerRadius = UDim.new(0,10); tbc.Parent = tb
+                local tlbl = Instance.new("TextLabel"); tlbl.Size = UDim2.new(1, -10, 1, 0); tlbl.Position = UDim2.new(0, 10, 0, 0)
+                tlbl.BackgroundTransparency = 1; tlbl.Text = "Speed Multiplier GUI"; tlbl.TextColor3 = Color3.fromRGB(255,255,255)
+                tlbl.TextSize = 16; tlbl.Font = Enum.Font.SourceSansBold; tlbl.TextXAlignment = Enum.TextXAlignment.Left; tlbl.Parent = tb
+                makeDraggable(sMain, tb)
+                local inp = Instance.new("TextBox"); inp.Size = UDim2.new(1, -20, 0, 35); inp.Position = UDim2.new(0, 10, 0, 45)
+                inp.BackgroundColor3 = Color3.fromRGB(45,45,45); inp.TextColor3 = Color3.fromRGB(255,255,255)
+                inp.PlaceholderText = "Enter speed here..."; inp.PlaceholderColor3 = Color3.fromRGB(150,150,150)
+                inp.Font = Enum.Font.SourceSans; inp.TextSize = 14; inp.Text = ""; inp.ClearTextOnFocus = false; inp.Parent = sMain
+                local ic2 = Instance.new("UICorner"); ic2.CornerRadius = UDim.new(0,6); ic2.Parent = inp
+                local eb = Instance.new("TextButton"); eb.Size = UDim2.new(1, -20, 0, 35); eb.Position = UDim2.new(0, 10, 0, 95)
+                eb.BackgroundColor3 = Color3.fromRGB(0,150,0); eb.Text = "Enter"; eb.TextColor3 = Color3.fromRGB(255,255,255)
+                eb.Font = Enum.Font.SourceSansBold; eb.TextSize = 14; eb.Parent = sMain
+                local ec2 = Instance.new("UICorner"); ec2.CornerRadius = UDim.new(0,6); ec2.Parent = eb
+                eb.MouseButton1Click:Connect(function()
+                    local n = tonumber(inp.Text); if n then
+                        local c = player.Character
+                        if c then local h = c:FindFirstChildOfClass("Humanoid"); if h then h.WalkSpeed = n end end
+                    end
+                end)
+            else speedGui.Enabled = true end
+        else if speedGui then speedGui.Enabled = false end end
+    end)
+
+    local animFrame, animButton = makeMenuButton("play custom animation", 20)
+    local animIndicator = createIndicator(animFrame)
+    animButton.MouseButton1Click:Connect(function()
+        local id = "129764254213842"
+        local char = player.Character; if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        local animator = hum:FindFirstChildOfClass("Animator"); if not animator then return end
+        local a = Instance.new("Animation"); a.AnimationId = "rbxassetid://" .. id
+        local t = animator:LoadAnimation(a); t:Play()
+        task.delay(2, function() t:Stop() end)
+    end)
+
+    local fishFrame, fishButton = makeMenuButton("Fish", 21)
+    local fishIndicator = createIndicator(fishFrame)
+    fishButton.MouseButton1Click:Connect(function()
+        fishEnabled = not fishEnabled; setIndicatorState(fishIndicator, fishEnabled)
+        if fishEnabled then
+            if not fishConn then
+                fishConn = RunService.Stepped:Connect(function()
+                    local char = player.Character; if char then
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        if hum then hum:ChangeState(Enum.HumanoidStateType.Swimming)
+                            for _, p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+                        end
+                    end
+                end)
+            end
+        else
+            if fishConn then fishConn:Disconnect(); fishConn = nil end
+            local char = player.Character
+            if char then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then hum:ChangeState(Enum.HumanoidStateType.Running) end
+                for _, p in ipairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end
+            end
+        end
+    end)
+
+    local jpFrame, jpButton = makeMenuButton("Jump Power Multiplier", 22)
+    local jpIndicator = createIndicator(jpFrame)
+    local jpGui = nil
+    local jpEnabled = false
+    jpButton.MouseButton1Click:Connect(function()
+        jpEnabled = not jpEnabled; setIndicatorState(jpIndicator, jpEnabled)
+        if jpEnabled then
+            if not jpGui then
+                jpGui = Instance.new("ScreenGui"); jpGui.Name = "JumpPowerGui"; jpGui.ResetOnSpawn = false; jpGui.Parent = playerGui
+                local jm = Instance.new("Frame"); jm.Size = UDim2.new(0, 280, 0, 150); jm.Position = UDim2.new(0.5, -140, 0.5, -75)
+                jm.BackgroundColor3 = Color3.fromRGB(25,25,25); jm.BorderSizePixel = 0; jm.Active = true; jm.Parent = jpGui
+                local jmc = Instance.new("UICorner"); jmc.CornerRadius = UDim.new(0,10); jmc.Parent = jm
+                local jtb = Instance.new("Frame"); jtb.Size = UDim2.new(1, 0, 0, 35); jtb.BackgroundColor3 = Color3.fromRGB(40,40,40)
+                jtb.BorderSizePixel = 0; jtb.Parent = jm
+                local jtbc = Instance.new("UICorner"); jtbc.CornerRadius = UDim.new(0,10); jtbc.Parent = jtb
+                local jtl = Instance.new("TextLabel"); jtl.Size = UDim2.new(1, -10, 1, 0); jtl.Position = UDim2.new(0, 10, 0, 0)
+                jtl.BackgroundTransparency = 1; jtl.Text = "Jump Power Multiplier"; jtl.TextColor3 = Color3.fromRGB(255,255,255)
+                jtl.TextSize = 16; jtl.Font = Enum.Font.SourceSansBold; jtl.TextXAlignment = Enum.TextXAlignment.Left; jtl.Parent = jtb
+                makeDraggable(jm, jtb)
+                local jIn = Instance.new("TextBox"); jIn.Size = UDim2.new(1, -20, 0, 35); jIn.Position = UDim2.new(0, 10, 0, 45)
+                jIn.BackgroundColor3 = Color3.fromRGB(45,45,45); jIn.TextColor3 = Color3.fromRGB(255,255,255)
+                jIn.PlaceholderText = "Enter jump power..."; jIn.PlaceholderColor3 = Color3.fromRGB(150,150,150)
+                jIn.Font = Enum.Font.SourceSans; jIn.TextSize = 14; jIn.Text = ""; jIn.ClearTextOnFocus = false; jIn.Parent = jm
+                local jInC = Instance.new("UICorner"); jInC.CornerRadius = UDim.new(0,6); jInC.Parent = jIn
+                local jEb = Instance.new("TextButton"); jEb.Size = UDim2.new(1, -20, 0, 35); jEb.Position = UDim2.new(0, 10, 0, 95)
+                jEb.BackgroundColor3 = Color3.fromRGB(0,150,0); jEb.Text = "Enter"; jEb.TextColor3 = Color3.fromRGB(255,255,255)
+                jEb.Font = Enum.Font.SourceSansBold; jEb.TextSize = 14; jEb.Parent = jm
+                local jEbC = Instance.new("UICorner"); jEbC.CornerRadius = UDim.new(0,6); jEbC.Parent = jEb
+                jEb.MouseButton1Click:Connect(function()
+                    local n = tonumber(jIn.Text); if n then
+                        local c = player.Character
+                        if c then local h = c:FindFirstChildOfClass("Humanoid"); if h then h.UseJumpPower = true; h.JumpPower = n end end
+                    end
+                end)
+            else jpGui.Enabled = true end
+        else if jpGui then jpGui.Enabled = false end end
+    end)
+
+    local onCollideFrame, onCollideButton = makeMenuButton("on cancollide all", 23)
+    onCollideButton.MouseButton1Click:Connect(function()
+        for _, v in pairs(workspace:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = true end end
+    end)
+    local offCollideFrame, offCollideButton = makeMenuButton("off cancollide all", 24)
+    offCollideButton.MouseButton1Click:Connect(function()
+        for _, v in pairs(workspace:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    end)
+
+    makeScriptButton("nds hub (w2pr)", 25, "https://scriptblox.com/raw/Natural-Disaster-Survival-Katers-NDS-Hub-19533", "ndsHubUsed")
+    makeScriptButton("hamster ball (w2pr)", 26, "https://raw.githubusercontent.com/KaterHub-Inc/scripts/refs/heads/main/unofficial-Projects/FEHamsterBall.lua", "hamsterBallUsed")
+    makeScriptButton("katerhub v5 (w2pr)", 27, "https://scriptblox.com/raw/Universal-Script-KaterHub-reupload-47444", "katerhubV5Used")
+    makeScriptButton("Chance Aimbot (forsaken) (Meogaming2026)", 28, "https://raw.githubusercontent.com/meogaming2025/Script/refs/heads/main/Forsaken/Chance%20Aimbot%20Version%203.lua", "chanceAimbotUsed")
+    makeScriptButton("Forsaken Macro (CakeMix)", 29, "https://pastefy.app/Au1wV9nQ/raw", "forsakenMacroUsed")
+    makeScriptButton("Detect spectate (forsaken) (forsakenUPLOADER)", 30, "https://scriptblox.com/raw/UPD-Forsaken-Detect-when-players-spectate-you-236192", "detectSpectateUsed")
+
+    local asFrame, asButton = makeMenuButton("animations speed", 31)
+    local asIndicator = createIndicator(asFrame)
+    asButton.MouseButton1Click:Connect(function()
+        animSpeedGuiEnabled = not animSpeedGuiEnabled
+        setIndicatorState(asIndicator, animSpeedGuiEnabled)
+        if animSpeedGuiEnabled then
+            if not animSpeedGui then
+                animSpeedGui = Instance.new("ScreenGui"); animSpeedGui.Name = "AnimSpeedGui"; animSpeedGui.ResetOnSpawn = false; animSpeedGui.Parent = playerGui
+                local asMain = Instance.new("Frame")
+                asMain.Size = UDim2.new(0, 300, 0, 150); asMain.Position = UDim2.new(0.5, -150, 0.5, -75)
+                asMain.BackgroundColor3 = Color3.fromRGB(25,25,25); asMain.BorderSizePixel = 0; asMain.Active = true; asMain.Parent = animSpeedGui
+                local asCorner = Instance.new("UICorner"); asCorner.CornerRadius = UDim.new(0,10); asCorner.Parent = asMain
+                local asTitleBar = Instance.new("Frame"); asTitleBar.Size = UDim2.new(1, 0, 0, 35)
+                asTitleBar.BackgroundColor3 = Color3.fromRGB(40,40,40); asTitleBar.BorderSizePixel = 0; asTitleBar.Parent = asMain
+                local asTitleCorner = Instance.new("UICorner"); asTitleCorner.CornerRadius = UDim.new(0,10); asTitleCorner.Parent = asTitleBar
+                local asTitleLabel = Instance.new("TextLabel"); asTitleLabel.Size = UDim2.new(1, -10, 1, 0)
+                asTitleLabel.Position = UDim2.new(0, 10, 0, 0); asTitleLabel.BackgroundTransparency = 1
+                asTitleLabel.Text = "Animations Speed GUI"; asTitleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+                asTitleLabel.TextSize = 16; asTitleLabel.Font = Enum.Font.SourceSansBold
+                asTitleLabel.TextXAlignment = Enum.TextXAlignment.Left; asTitleLabel.Parent = asTitleBar
+                makeDraggable(asMain, asTitleBar)
+                local leftFrame = Instance.new("Frame"); leftFrame.Size = UDim2.new(0, 130, 1, -45)
+                leftFrame.Position = UDim2.new(0, 10, 0, 40); leftFrame.BackgroundTransparency = 1; leftFrame.Parent = asMain
+                local asInput = Instance.new("TextBox"); asInput.Size = UDim2.new(1, 0, 0, 35)
+                asInput.Position = UDim2.new(0, 0, 0, 0); asInput.BackgroundColor3 = Color3.fromRGB(45,45,45)
+                asInput.TextColor3 = Color3.fromRGB(255,255,255); asInput.PlaceholderText = "Enter speed..."
+                asInput.PlaceholderColor3 = Color3.fromRGB(150,150,150); asInput.Font = Enum.Font.SourceSans
+                asInput.TextSize = 14; asInput.Text = ""; asInput.ClearTextOnFocus = false; asInput.Parent = leftFrame
+                local asInputCorner = Instance.new("UICorner"); asInputCorner.CornerRadius = UDim.new(0,6); asInputCorner.Parent = asInput
+                local asEnterBtn = Instance.new("TextButton"); asEnterBtn.Size = UDim2.new(1, 0, 0, 35)
+                asEnterBtn.Position = UDim2.new(0, 0, 0, 45); asEnterBtn.BackgroundColor3 = Color3.fromRGB(0,150,0)
+                asEnterBtn.Text = "Enter"; asEnterBtn.TextColor3 = Color3.fromRGB(255,255,255)
+                asEnterBtn.Font = Enum.Font.SourceSansBold; asEnterBtn.TextSize = 14; asEnterBtn.Parent = leftFrame
+                local asEnterCorner = Instance.new("UICorner"); asEnterCorner.CornerRadius = UDim.new(0,6); asEnterCorner.Parent = asEnterBtn
+                local rightFrame = Instance.new("Frame"); rightFrame.Size = UDim2.new(0, 140, 1, -45)
+                rightFrame.Position = UDim2.new(1, -150, 0, 40); rightFrame.BackgroundTransparency = 1; rightFrame.Parent = asMain
+                local grid = Instance.new("UIGridLayout"); grid.CellSize = UDim2.new(0, 65, 0, 35)
+                grid.CellPadding = UDim2.new(0, 5, 0, 5); grid.Parent = rightFrame
+                local function applyAnimSpeed(speed)
+                    currentAnimSpeed = speed
+                    if not animSpeedConn then
+                        animSpeedConn = RunService.Stepped:Connect(function()
+                            local char = player.Character
+                            if char then
+                                local hum = char:FindFirstChildOfClass("Humanoid")
+                                if hum then
+                                    local animator = hum:FindFirstChildOfClass("Animator")
+                                    if animator then
+                                        for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                                            track:AdjustSpeed(currentAnimSpeed)
+                                        end
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                end
+                local presets = {
+                    {name = "0.1x", speed = 0.1},
+                    {name = "1x", speed = 1},
+                    {name = "16x", speed = 16},
+                    {name = "999x", speed = 999}
+                }
+                for i, preset in ipairs(presets) do
+                    local pBtn = Instance.new("TextButton"); pBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+                    pBtn.TextColor3 = Color3.fromRGB(255,255,255); pBtn.Text = preset.name
+                    pBtn.Font = Enum.Font.SourceSansBold; pBtn.TextSize = 12
+                    pBtn.LayoutOrder = i; pBtn.Parent = rightFrame
+                    local pBtnCorner = Instance.new("UICorner"); pBtnCorner.CornerRadius = UDim.new(0,6); pBtnCorner.Parent = pBtn
+                    pBtn.MouseButton1Click:Connect(function()
+                        applyAnimSpeed(preset.speed); asInput.Text = tostring(preset.speed)
+                    end)
+                end
+                asEnterBtn.MouseButton1Click:Connect(function()
+                    local num = tonumber(asInput.Text)
+                    if num then applyAnimSpeed(num) end
+                end)
+            else animSpeedGui.Enabled = true end
+        else
+            if animSpeedGui then animSpeedGui.Enabled = false end
+            if animSpeedConn then animSpeedConn:Disconnect(); animSpeedConn = nil end
+            currentAnimSpeed = 1
+        end
+    end)
+
+    makeScriptButton("c00lclan (v2 by Elvis Gaming, v1 by c00lkiddking)", 32, "https://pastebin.com/raw/14EU4i8n", "c00lclanUsed")
+
+    local espFrame, espButton = makeMenuButton("ESP", 33)
+    local espIndicator = createIndicator(espFrame)
+    local espEnabled = false
+    espButton.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled; setIndicatorState(espIndicator, espEnabled)
+        updateESPState("All", espEnabled, function()
+            local list = {}
+            for _, p in ipairs(Players:GetPlayers()) do if p.Character then table.insert(list, p.Character) end end
+            return list
+        end)
+    end)
+
+    local espKFrame, espKButton = makeMenuButton("ESP (killers)", 34)
+    local espKIndicator = createIndicator(espKFrame)
+    local espKEnabled = false
+    espKButton.MouseButton1Click:Connect(function()
+        espKEnabled = not espKEnabled; setIndicatorState(espKIndicator, espKEnabled)
+        updateESPState("Killers", espKEnabled, function()
+            local list = {}
+            local pf = workspace:FindFirstChild("Players")
+            local kf = pf and pf:FindFirstChild("Killers")
+            if kf then for _, obj in ipairs(kf:GetChildren()) do if obj:IsA("Model") then table.insert(list, obj) end end end
+            return list
+        end)
+    end)
+
+    local espSFrame, espSButton = makeMenuButton("ESP (Survivors)", 35)
+    local espSIndicator = createIndicator(espSFrame)
+    local espSEnabled = false
+    espSButton.MouseButton1Click:Connect(function()
+        espSEnabled = not espSEnabled; setIndicatorState(espSIndicator, espSEnabled)
+        updateESPState("Survivors", espSEnabled, function()
+            local list = {}
+            local pf = workspace:FindFirstChild("Players")
+            local sf = pf and pf:FindFirstChild("Survivors")
+            if sf then for _, obj in ipairs(sf:GetChildren()) do if obj:IsA("Model") then table.insert(list, obj) end end end
+            return list
+        end)
+    end)
+
+    local rickFrame, rickButton = makeMenuButton("Rick tp gun (Scroe)", 36)
+    local rickIndicator = Instance.new("Frame")
+    rickIndicator.Size = UDim2.new(0, 20, 0, 20); rickIndicator.Position = UDim2.new(1, -26, 0.5, -10)
+    rickIndicator.BackgroundColor3 = Color3.fromRGB(255,0,0); rickIndicator.BorderSizePixel = 0
+    rickIndicator.ClipsDescendants = true; rickIndicator.Parent = rickFrame
+    local rc = Instance.new("UICorner"); rc.CornerRadius = UDim.new(1,0); rc.Parent = rickIndicator
+    local rickImg = Instance.new("ImageLabel"); rickImg.Size = UDim2.new(1,0,1,0)
+    rickImg.BackgroundTransparency = 1; rickImg.Image = "rbxassetid://71556108620341"
+    rickImg.Visible = false; rickImg.Parent = rickIndicator
+    if rickTpGunUsed then
+        rickButton.TextColor3 = Color3.fromRGB(150,150,150)
+        rickIndicator.BackgroundColor3 = Color3.fromRGB(0,255,0); rickImg.Visible = true
+    end
+    rickButton.MouseButton1Click:Connect(function()
+        if rickTpGunUsed then return end
+        rickTpGunUsed = true; rickButton.TextColor3 = Color3.fromRGB(150,150,150)
+        rickIndicator.BackgroundColor3 = Color3.fromRGB(0,255,0); rickImg.Visible = true
+        task.spawn(function() loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-Rick-tp-gun-hub-224677"))() end)
+    end)
+
+    local lidarFrame, lidarButton = makeMenuButton("Lidar", 37)
+    local lidarIndicator = createIndicator(lidarFrame)
+    local lidarEnabled = false
+    lidarButton.MouseButton1Click:Connect(function()
+        lidarEnabled = not lidarEnabled; setIndicatorState(lidarIndicator, lidarEnabled)
+        if lidarEnabled then
+            if not lidarTool then
+                lidarPointsFolder = Instance.new("Folder"); lidarPointsFolder.Name = "LidarPoints"; lidarPointsFolder.Parent = workspace
+                lidarTool = Instance.new("Tool"); lidarTool.Name = "Lidar"; lidarTool.RequiresHandle = false; lidarTool.CanBeDropped = false
+                lidarTool.Parent = player.Backpack
+                lidarGui = Instance.new("ScreenGui"); lidarGui.Name = "LidarGui"; lidarGui.ResetOnSpawn = false; lidarGui.Enabled = false; lidarGui.Parent = playerGui
+                local black = Instance.new("Frame"); black.Size = UDim2.new(1,0,1,0); black.BackgroundColor3 = Color3.new(0,0,0)
+                black.BackgroundTransparency = 0.3; black.BorderSizePixel = 0; black.Parent = lidarGui
+                local pb = Instance.new("Frame"); pb.Size = UDim2.new(0, 200, 0, 15); pb.Position = UDim2.new(0, 20, 1, -40)
+                pb.BackgroundColor3 = Color3.fromRGB(50,50,50); pb.BorderSizePixel = 0; pb.Parent = lidarGui
+                local pbc = Instance.new("UICorner"); pbc.CornerRadius = UDim.new(0,8); pbc.Parent = pb
+                local fill = Instance.new("Frame"); fill.Size = UDim2.new(1,0,1,0); fill.BackgroundColor3 = Color3.fromRGB(255,255,255)
+                fill.BorderSizePixel = 0; fill.Parent = pb
+                local fc = Instance.new("UICorner"); fc.CornerRadius = UDim.new(0,8); fc.Parent = fill
+                local scanAll = Instance.new("TextButton"); scanAll.Size = UDim2.new(0, 100, 0, 40); scanAll.Position = UDim2.new(1, -120, 0.5, -20)
+                scanAll.BackgroundColor3 = Color3.fromRGB(0,150,0); scanAll.Text = "SCAN ALL"; scanAll.TextColor3 = Color3.fromRGB(255,255,255)
+                scanAll.Font = Enum.Font.SourceSansBold; scanAll.TextSize = 14; scanAll.Parent = lidarGui
+                local sac = Instance.new("UICorner"); sac.CornerRadius = UDim.new(0,6); sac.Parent = scanAll
+                local function doScan(spread, count)
+                    if lidarPower < 0.5 then return end
+                    lidarPower -= 0.5; fill.Size = UDim2.new(lidarPower, 0, 1, 0)
+                    for _, pt in ipairs(lidarPointsFolder:GetChildren()) do pt:Destroy() end
+                    local cam = workspace.CurrentCamera
+                    for i = 1, count do
+                        local r = Random.new()
+                        local dir = (cam.CFrame.LookVector + Vector3.new(r:NextNumber(-spread, spread), r:NextNumber(-spread, spread), r:NextNumber(-spread, spread))).Unit * 500
+                        local rp = RaycastParams.new(); rp.FilterType = Enum.RaycastFilterType.Exclude
+                        rp.FilterDescendantsInstances = {player.Character, lidarPointsFolder}
+                        local result = workspace:Raycast(cam.CFrame.Position, dir, rp)
+                        if result then
+                            local pt = Instance.new("Part"); pt.Size = Vector3.new(0.2,0.2,0.2); pt.Position = result.Position
+                            pt.Anchored = true; pt.CanCollide = false; pt.Material = Enum.Material.Neon
+                            pt.Color = Color3.fromRGB(255,255,255); pt.Shape = Enum.PartType.Ball; pt.Parent = lidarPointsFolder
+                        end
+                    end
+                end
+                lidarTool.Equipped:Connect(function()
+                    lidarEquipped = true; lidarGui.Enabled = true
+                    if lidarRegenConn then lidarRegenConn:Disconnect() end
+                    lidarRegenConn = RunService.RenderStepped:Connect(function(dt)
+                        if lidarPower < 1 then lidarPower = math.min(1, lidarPower + 2 * dt); fill.Size = UDim2.new(lidarPower, 0, 1, 0) end
+                    end)
+                end)
+                lidarTool.Unequipped:Connect(function()
+                    lidarEquipped = false; lidarGui.Enabled = false
+                    if lidarRegenConn then lidarRegenConn:Disconnect(); lidarRegenConn = nil end
+                    for _, pt in ipairs(lidarPointsFolder:GetChildren()) do pt:Destroy() end
+                end)
+                lidarTool.Activated:Connect(function() doScan(0.2, 100) end)
+                scanAll.MouseButton1Click:Connect(function() doScan(0.5, 300) end)
+            else lidarTool.Parent = player.Backpack end
+        else
+            if lidarTool then lidarTool:Destroy(); lidarTool = nil end
+            if lidarPointsFolder then lidarPointsFolder:Destroy(); lidarPointsFolder = nil end
+            if lidarGui then lidarGui:Destroy(); lidarGui = nil end
+            if lidarRegenConn then lidarRegenConn:Disconnect(); lidarRegenConn = nil end
+            lidarEquipped = false
+        end
+    end)
+
+    makeScriptButton("Slide and Crouch (AzScripter)", 38, "https://scriptblox.com/raw/Universal-Script-FE-R15-Slide-and-Crouch-Mobile-and-PC-236768", "slideCrouchUsed")
+    makeScriptButton("fly (asuthereal)", 39, "https://luau.pro/storage/FLY-GUI.lua", "flyAsuUsed")
+    makeScriptButton("Giant T-Rex (Ahanamajam)", 40, "https://scriptblox.com/raw/Universal-Script-Giant-T-Rex-skeleton-Alternative-Primadon-ui-control-panel-236747", "giantTRexUsed")
+
+    local abysallFrame, abysallButton = makeMenuButton("Abysall Hub For doors (Therealcookiemonster)", 41)
+    local abysallIndicator = createIndicator(abysallFrame)
+    if abysallHubUsed then abysallButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(abysallIndicator, true) end
+    abysallButton.MouseButton1Click:Connect(function()
+        if abysallHubUsed then return end
+        confirmGui = Instance.new("ScreenGui"); confirmGui.Name = "ConfirmGui"; confirmGui.ResetOnSpawn = false; confirmGui.Parent = playerGui
+        local pf = Instance.new("Frame"); pf.Size = UDim2.new(0, 260, 0, 130); pf.Position = UDim2.new(0.5, -130, 0.5, -65)
+        pf.BackgroundColor3 = Color3.fromRGB(30,30,30); pf.BorderSizePixel = 0; pf.Parent = confirmGui
+        local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0,10); c.Parent = pf
+        local stroke = Instance.new("UIStroke"); stroke.Color = Color3.fromRGB(255,0,0); stroke.Thickness = 3; stroke.Transparency = 0.2; stroke.Parent = pf
+        TweenService:Create(stroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.8}):Play()
+        local tl = Instance.new("TextLabel"); tl.Size = UDim2.new(1, -20, 0, 60); tl.Position = UDim2.new(0, 10, 0, 5)
+        tl.BackgroundTransparency = 1; tl.Text = "This script may contain a virus! Do not run it! Do so at your own risk! Do you want to run it?"
+        tl.TextColor3 = Color3.fromRGB(255,255,255); tl.TextWrapped = true; tl.Font = Enum.Font.SourceSansBold; tl.TextSize = 12; tl.Parent = pf
+        local yes = Instance.new("TextButton"); yes.Size = UDim2.new(0, 90, 0, 35); yes.Position = UDim2.new(0, 15, 1, -45)
+        yes.BackgroundColor3 = Color3.fromRGB(200,0,0); yes.Text = "Yes"; yes.TextColor3 = Color3.fromRGB(255,255,255)
+        yes.Font = Enum.Font.SourceSansBold; yes.TextSize = 14; yes.Parent = pf
+        local yc = Instance.new("UICorner"); yc.CornerRadius = UDim.new(0,6); yc.Parent = yes
+        local no = Instance.new("TextButton"); no.Size = UDim2.new(0, 90, 0, 35); no.Position = UDim2.new(1, -105, 1, -45)
+        no.BackgroundColor3 = Color3.fromRGB(100,100,100); no.Text = "No"; no.TextColor3 = Color3.fromRGB(255,255,255)
+        no.Font = Enum.Font.SourceSansBold; no.TextSize = 14; no.Parent = pf
+        local nc = Instance.new("UICorner"); nc.CornerRadius = UDim.new(0,6); nc.Parent = no
+        local shake
+        shake = RunService.RenderStepped:Connect(function()
+            if not yes or not yes.Parent then if shake then shake:Disconnect() end; return end
+            yes.Position = UDim2.new(0, 15 + math.random(-3,3), 1, -45 + math.random(-3,3))
+        end)
+        no.MouseButton1Click:Connect(function() if shake then shake:Disconnect() end; confirmGui:Destroy() end)
+        yes.MouseButton1Click:Connect(function()
+            if shake then shake:Disconnect() end; confirmGui:Destroy()
+            abysallHubUsed = true; abysallButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(abysallIndicator, true)
+            task.spawn(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/coolcookiebusiness/AbysallHubContinued/main/Games/Doors/Main.luau"))() end)
+        end)
+    end)
+
+    makeScriptButton("Waypoints (Shoma3)", 42, "https://pastebin.com/raw/TEBJDDLV", "waypointsUsed")
+
+    local tcFrame, tcButton = makeMenuButton("Time Control (Shoma3)", 43)
+    local tcIndicator = createIndicator(tcFrame)
+    local tcOnCooldown = false
+    tcButton.MouseButton1Click:Connect(function()
+        if tcOnCooldown then return end
+        tcOnCooldown = true
+        tcIndicator.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+        task.spawn(function() loadstring(game:HttpGet("https://pastebin.com/raw/a4xvFU9G"))() end)
+        task.delay(1, function()
+            tcOnCooldown = false
+            tcIndicator.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        end)
+    end)
+
+    makeScriptButton("ID Finder (Shoma3)", 44, "https://pastebin.com/raw/UNWyqYXb", "idFinderUsed")
+
+    local obFrame, obButton = makeMenuButton("Oblivion Emotes (OblivionCodes)", 45)
+    local obIndicator = createIndicator(obFrame)
+    if oblivionEmotesUsed then obButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(obIndicator, true) end
+    obButton.MouseButton1Click:Connect(function()
+        if oblivionEmotesUsed then return end
+        oblivionEmotesUsed = true; setIndicatorState(obIndicator, true); obButton.TextColor3 = Color3.fromRGB(150,150,150)
+        task.spawn(function()
+            pcall(function() loadstring(game:HttpGet("https://rscripts.net/api/telemetry/v2/client.lua?s=6af841ac666145d592812686"))() end)
+            loadstring(game:HttpGet("https://oblivion.menu/emote"))()
+        end)
+    end)
+
+    local ftapFrame, ftapButton = makeMenuButton("OP Oblivion Hub For FTAP (OblivionCodes)", 46)
+    local ftapIndicator = createIndicator(ftapFrame)
+    if opOblivionFTAPUsed then ftapButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(ftapIndicator, true) end
+    ftapButton.MouseButton1Click:Connect(function()
+        if opOblivionFTAPUsed then return end
+        opOblivionFTAPUsed = true; setIndicatorState(ftapIndicator, true); ftapButton.TextColor3 = Color3.fromRGB(150,150,150)
+        local fg = Instance.new("ScreenGui"); fg.Name = "FTAPNotifyGui"; fg.ResetOnSpawn = false
+        fg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; fg.DisplayOrder = 999; fg.Parent = playerGui
+        local nf = Instance.new("Frame"); nf.Size = UDim2.new(0, 400, 0, 100)
+        nf.Position = UDim2.new(0.5, -200, 0.5, -50); nf.BackgroundColor3 = Color3.fromRGB(25,25,25)
+        nf.BackgroundTransparency = 0; nf.BorderSizePixel = 0; nf.Parent = fg
+        local nfc = Instance.new("UICorner"); nfc.CornerRadius = UDim.new(0,12); nfc.Parent = nf
+        local ns = Instance.new("UIStroke"); ns.Color = Color3.fromRGB(150,0,200); ns.Thickness = 2; ns.Transparency = 0; ns.Parent = nf
+        local nt = Instance.new("TextLabel"); nt.Size = UDim2.new(1, -30, 1, -30); nt.Position = UDim2.new(0, 15, 0, 15)
+        nt.BackgroundTransparency = 1; nt.Text = "The full name of the game is Fling Things and People."
+        nt.TextColor3 = Color3.fromRGB(255,255,255); nt.TextWrapped = true; nt.TextScaled = true
+        nt.Font = Enum.Font.SourceSansBold; nt.TextTransparency = 0; nt.Parent = nf
+        local ti = TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        TweenService:Create(nf, ti, {BackgroundTransparency = 1}):Play()
+        TweenService:Create(nt, ti, {TextTransparency = 1}):Play()
+        TweenService:Create(ns, ti, {Transparency = 1}):Play()
+        task.delay(5, function()
+            if fg then fg:Destroy() end
+            task.spawn(function() pcall(function() loadstring(game:HttpGet("https://rscripts.net/api/telemetry/v2/client.lua?s=6af62ae446ff7126b01fd7ab"))() end) end)
+            loadstring(game:HttpGet("https://oblivion.menu/loader"))()
+        end)
+    end)
+
+    local gravityFrame, gravityButton = makeMenuButton("Gravity Multiplier", 47)
+    local gravityIndicator = createIndicator(gravityFrame)
+    gravityButton.MouseButton1Click:Connect(function()
+        gravityGuiEnabled = not gravityGuiEnabled; setIndicatorState(gravityIndicator, gravityGuiEnabled)
+        if gravityGuiEnabled then
+            if not gravityGui then
+                gravityGui = Instance.new("ScreenGui"); gravityGui.Name = "GravityMultiplierGui"; gravityGui.ResetOnSpawn = false; gravityGui.Parent = playerGui
+                local g = Instance.new("Frame"); g.Size = UDim2.new(0, 280, 0, 150); g.Position = UDim2.new(0.5, -140, 0.5, -75)
+                g.BackgroundColor3 = Color3.fromRGB(25,25,25); g.BorderSizePixel = 0; g.Active = true; g.Parent = gravityGui
+                local gc = Instance.new("UICorner"); gc.CornerRadius = UDim.new(0,10); gc.Parent = g
+                local tb = Instance.new("Frame"); tb.Size = UDim2.new(1, 0, 0, 35); tb.BackgroundColor3 = Color3.fromRGB(40,40,40)
+                tb.BorderSizePixel = 0; tb.Parent = g
+                local tbc = Instance.new("UICorner"); tbc.CornerRadius = UDim.new(0,10); tbc.Parent = tb
+                local tl = Instance.new("TextLabel"); tl.Size = UDim2.new(1, -10, 1, 0); tl.Position = UDim2.new(0, 10, 0, 0)
+                tl.BackgroundTransparency = 1; tl.Text = "Gravity Multiplier GUI"; tl.TextColor3 = Color3.fromRGB(255,255,255)
+                tl.TextSize = 16; tl.Font = Enum.Font.SourceSansBold; tl.TextXAlignment = Enum.TextXAlignment.Left; tl.Parent = tb
+                makeDraggable(g, tb)
+                local inp = Instance.new("TextBox"); inp.Size = UDim2.new(1, -20, 0, 35); inp.Position = UDim2.new(0, 10, 0, 45)
+                inp.BackgroundColor3 = Color3.fromRGB(45,45,45); inp.TextColor3 = Color3.fromRGB(255,255,255)
+                inp.PlaceholderText = "Enter gravity here..."; inp.PlaceholderColor3 = Color3.fromRGB(150,150,150)
+                inp.Font = Enum.Font.SourceSans; inp.TextSize = 14; inp.Text = ""; inp.ClearTextOnFocus = false; inp.Parent = g
+                local ic2 = Instance.new("UICorner"); ic2.CornerRadius = UDim.new(0,6); ic2.Parent = inp
+                local eb = Instance.new("TextButton"); eb.Size = UDim2.new(1, -20, 0, 35); eb.Position = UDim2.new(0, 10, 0, 95)
+                eb.BackgroundColor3 = Color3.fromRGB(0,150,0); eb.Text = "Enter"; eb.TextColor3 = Color3.fromRGB(255,255,255)
+                eb.Font = Enum.Font.SourceSansBold; eb.TextSize = 14; eb.Parent = g
+                local ec2 = Instance.new("UICorner"); ec2.CornerRadius = UDim.new(0,6); ec2.Parent = eb
+                eb.MouseButton1Click:Connect(function() local n = tonumber(inp.Text); if n then workspace.Gravity = n end end)
+            else gravityGui.Enabled = true end
+        else if gravityGui then gravityGui.Enabled = false end end
+    end)
+
+    local fpsFrame, fpsButton = makeMenuButton("FPS", 48)
+    local fpsIndicator = createIndicator(fpsFrame)
+    fpsButton.MouseButton1Click:Connect(function()
+        fpsEnabled = not fpsEnabled; setIndicatorState(fpsIndicator, fpsEnabled)
+        if fpsEnabled then
+            if not fpsGui then
+                fpsGui = Instance.new("ScreenGui"); fpsGui.Name = "FPSGui"; fpsGui.ResetOnSpawn = false; fpsGui.Parent = playerGui
+                local lbl = Instance.new("TextLabel"); lbl.Name = "FPSLabel"
+                lbl.Size = UDim2.new(0, 100, 0, 30); lbl.Position = UDim2.new(1, -110, 0, 10)
+                lbl.BackgroundTransparency = 1; lbl.Text = "FPS: --"; lbl.TextColor3 = Color3.fromRGB(255,255,255)
+                lbl.TextSize = 18; lbl.Font = Enum.Font.SourceSansBold; lbl.TextXAlignment = Enum.TextXAlignment.Right; lbl.Parent = fpsGui
+                local frames, lastTime = 0, tick()
+                fpsConn = RunService.RenderStepped:Connect(function()
+                    frames = frames + 1
+                    local now = tick()
+                    if now - lastTime >= 1 then
+                        local f = math.floor(frames / (now - lastTime)); frames = 0; lastTime = now
+                        local c
+                        if f <= 30 then c = Color3.fromRGB(255,0,0)
+                        elseif f <= 200 then c = Color3.fromRGB(255,255,0)
+                        else c = Color3.fromRGB(0,255,0) end
+                        lbl.Text = "FPS: " .. f; lbl.TextColor3 = c
+                    end
+                end)
+            else fpsGui.Enabled = true end
+        else
+            if fpsGui then fpsGui.Enabled = false end
+            if fpsConn then fpsConn:Disconnect(); fpsConn = nil end
+        end
+    end)
+
+    local pingFrame, pingButton = makeMenuButton("Ping", 49)
+    local pingIndicator = createIndicator(pingFrame)
+    pingButton.MouseButton1Click:Connect(function()
+        pingEnabled = not pingEnabled; setIndicatorState(pingIndicator, pingEnabled)
+        if pingEnabled then
+            if not pingGui then
+                pingGui = Instance.new("ScreenGui"); pingGui.Name = "PingGui"; pingGui.ResetOnSpawn = false; pingGui.Parent = playerGui
+                local lbl = Instance.new("TextLabel"); lbl.Name = "PingLabel"
+                lbl.Size = UDim2.new(0, 100, 0, 30); lbl.Position = UDim2.new(1, -110, 0, 45)
+                lbl.BackgroundTransparency = 1; lbl.Text = "Ping: --"; lbl.TextColor3 = Color3.fromRGB(255,255,255)
+                lbl.TextSize = 18; lbl.Font = Enum.Font.SourceSansBold; lbl.TextXAlignment = Enum.TextXAlignment.Right; lbl.Parent = pingGui
+                pingConn = RunService.Heartbeat:Connect(function()
+                    local p = math.floor(player:GetNetworkPing() * 1000)
+                    local c
+                    if p <= 60 then c = Color3.fromRGB(0,255,0)
+                    elseif p <= 500 then c = Color3.fromRGB(255,255,0)
+                    else c = Color3.fromRGB(255,0,0) end
+                    lbl.Text = "Ping: " .. p .. " ms"; lbl.TextColor3 = c
+                end)
+            else pingGui.Enabled = true end
+        else
+            if pingGui then pingGui.Enabled = false end
+            if pingConn then pingConn:Disconnect(); pingConn = nil end
+        end
+    end)
+
+    local invAnimFrame, invAnimButton = makeMenuButton("invisible (animation)", 50)
+    local invAnimIndicator = createIndicator(invAnimFrame)
+    invAnimButton.MouseButton1Click:Connect(function()
+        invisibleAnimEnabled = not invisibleAnimEnabled
+        setIndicatorState(invAnimIndicator, invisibleAnimEnabled)
+        if invisibleAnimEnabled then
+            local char = player.Character
+            if not char then invisibleAnimEnabled = false; setIndicatorState(invAnimIndicator, false); return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum then invisibleAnimEnabled = false; setIndicatorState(invAnimIndicator, false); return end
+            local animator = hum:FindFirstChildOfClass("Animator")
+            if not animator then invisibleAnimEnabled = false; setIndicatorState(invAnimIndicator, false); return end
+            local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://72675993856360"
+            invisibleAnimTrack = animator:LoadAnimation(anim); invisibleAnimTrack.Looped = true; invisibleAnimTrack:Play()
+        else
+            if invisibleAnimTrack then invisibleAnimTrack:Stop(); invisibleAnimTrack = nil end
+        end
+    end)
+
+    local invFrFrame, invFrButton = makeMenuButton("invisible (fr)", 51)
+    local invFrIndicator = createIndicator(invFrFrame)
+    if invisibleFrUsed then invFrButton.TextColor3 = Color3.fromRGB(150,150,150); setIndicatorState(invFrIndicator, true) end
+    invFrButton.MouseButton1Click:Connect(function()
+        if invisibleFrUsed then return end
+        invisibleFrUsed = true; setIndicatorState(invFrIndicator, true); invFrButton.TextColor3 = Color3.fromRGB(150,150,150)
+        task.spawn(function() loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))() end)
+    end)
+
+    local hakariFrame, hakariButton = makeColorToggleButton("Hakari dance", 52)
+    hakariButton.MouseButton1Click:Connect(function()
+        danceEnabled["hakari"] = not danceEnabled["hakari"]
+        if danceEnabled["hakari"] then
+            hakariFrame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            local char = player.Character; if not char then danceEnabled["hakari"] = false; hakariFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then danceEnabled["hakari"] = false; hakariFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local animator = hum:FindFirstChildOfClass("Animator"); if not animator then danceEnabled["hakari"] = false; hakariFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            if danceTracks["hakari"] then pcall(function() danceTracks["hakari"]:Stop() end) end
+            local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://118465124106910"
+            danceTracks["hakari"] = animator:LoadAnimation(anim); danceTracks["hakari"].Looped = true; danceTracks["hakari"]:Play()
+        else
+            hakariFrame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            if danceTracks["hakari"] then pcall(function() danceTracks["hakari"]:Stop() end); danceTracks["hakari"] = nil end
+        end
+    end)
+
+    local azureFrame, azureButton = makeColorToggleButton("azure anims (R15) (forsaken)", 53)
+    azureButton.MouseButton1Click:Connect(function()
+        local char = player.Character; if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        local animate = char:FindFirstChild("Animate"); if not animate then return end
+        azureActive = not azureActive
+        if azureActive then
+            azureFrame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            azureSavedData = {
+                walkSpeed = hum.WalkSpeed,
+                idle1 = animate.idle and animate.idle:FindFirstChild("Animation1") and animate.idle.Animation1.AnimationId or nil,
+                idle2 = animate.idle and animate.idle:FindFirstChild("Animation2") and animate.idle.Animation2.AnimationId or nil,
+                walkAnim = animate.walk and animate.walk:FindFirstChild("WalkAnim") and animate.walk.WalkAnim.AnimationId or nil,
+                runAnim = animate.run and animate.run:FindFirstChild("RunAnim") and animate.run.RunAnim.AnimationId or nil,
+            }
+            if animate.idle then
+                if animate.idle:FindFirstChild("Animation1") then animate.idle.Animation1.AnimationId = "rbxassetid://74443937226830" end
+                if animate.idle:FindFirstChild("Animation2") then animate.idle.Animation2.AnimationId = "rbxassetid://74443937226830" end
+            end
+            if animate.walk and animate.walk:FindFirstChild("WalkAnim") then animate.walk.WalkAnim.AnimationId = "rbxassetid://74007452122320" end
+            if animate.run and animate.run:FindFirstChild("RunAnim") then animate.run.RunAnim.AnimationId = "rbxassetid://74007452122320" end
+            hum.WalkSpeed = 9.25
+            forceReloadAnimate(char)
+        else
+            azureFrame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            if azureSavedData then
+                hum.WalkSpeed = azureSavedData.walkSpeed or 16
+                if azureSavedData.idle1 and animate.idle and animate.idle:FindFirstChild("Animation1") then animate.idle.Animation1.AnimationId = azureSavedData.idle1 end
+                if azureSavedData.idle2 and animate.idle and animate.idle:FindFirstChild("Animation2") then animate.idle.Animation2.AnimationId = azureSavedData.idle2 end
+                if azureSavedData.walkAnim and animate.walk and animate.walk:FindFirstChild("WalkAnim") then animate.walk.WalkAnim.AnimationId = azureSavedData.walkAnim end
+                if azureSavedData.runAnim and animate.run and animate.run:FindFirstChild("RunAnim") then animate.run.RunAnim.AnimationId = azureSavedData.runAnim end
+                forceReloadAnimate(char)
+                azureSavedData = nil
+            end
+        end
+    end)
+
+    local mm2Frame, mm2Button = makeColorToggleButton("fake MM2 dead", 54)
+    mm2Button.MouseButton1Click:Connect(function()
+        danceEnabled["mm2"] = not danceEnabled["mm2"]
+        if danceEnabled["mm2"] then
+            mm2Frame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            local char = player.Character; if not char then danceEnabled["mm2"] = false; mm2Frame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then danceEnabled["mm2"] = false; mm2Frame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local animator = hum:FindFirstChildOfClass("Animator"); if not animator then danceEnabled["mm2"] = false; mm2Frame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            if danceTracks["mm2"] then pcall(function() danceTracks["mm2"]:Stop() end) end
+            local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://78351868546033"
+            danceTracks["mm2"] = animator:LoadAnimation(anim); danceTracks["mm2"].Looped = true; danceTracks["mm2"]:Play()
+        else
+            mm2Frame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            if danceTracks["mm2"] then pcall(function() danceTracks["mm2"]:Stop() end); danceTracks["mm2"] = nil end
+        end
+    end)
+
+    local caraFrame, caraButton = makeColorToggleButton("Caramelldansen", 55)
+    caraButton.MouseButton1Click:Connect(function()
+        danceEnabled["cara"] = not danceEnabled["cara"]
+        if danceEnabled["cara"] then
+            caraFrame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            local char = player.Character; if not char then danceEnabled["cara"] = false; caraFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then danceEnabled["cara"] = false; caraFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local animator = hum:FindFirstChildOfClass("Animator"); if not animator then danceEnabled["cara"] = false; caraFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            if danceTracks["cara"] then pcall(function() danceTracks["cara"]:Stop() end) end
+            local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://102908521825429"
+            danceTracks["cara"] = animator:LoadAnimation(anim); danceTracks["cara"].Looped = true; danceTracks["cara"]:Play()
+        else
+            caraFrame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            if danceTracks["cara"] then pcall(function() danceTracks["cara"]:Stop() end); danceTracks["cara"] = nil end
+        end
+    end)
+
+    local avgnFrame, avgnButton = makeColorToggleButton("AVGN dance", 56)
+    avgnButton.MouseButton1Click:Connect(function()
+        danceEnabled["avgn"] = not danceEnabled["avgn"]
+        if danceEnabled["avgn"] then
+            avgnFrame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            local char = player.Character; if not char then danceEnabled["avgn"] = false; avgnFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then danceEnabled["avgn"] = false; avgnFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            local animator = hum:FindFirstChildOfClass("Animator"); if not animator then danceEnabled["avgn"] = false; avgnFrame.BackgroundColor3 = Color3.fromRGB(180,0,0); return end
+            if danceTracks["avgn"] then pcall(function() danceTracks["avgn"]:Stop() end) end
+            local anim = Instance.new("Animation"); anim.AnimationId = "rbxassetid://123170612946963"
+            danceTracks["avgn"] = animator:LoadAnimation(anim); danceTracks["avgn"].Looped = true; danceTracks["avgn"]:Play()
+        else
+            avgnFrame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            if danceTracks["avgn"] then pcall(function() danceTracks["avgn"]:Stop() end); danceTracks["avgn"] = nil end
+        end
+    end)
+
+    local ANIM_1X_IDLE = "rbxassetid://136135251062665"
+    local ANIM_1X_WALK = "rbxassetid://137279210764354"
+    local oneXR15Frame, oneXR15Button = makeColorToggleButton("1x1x1x1 anims (forsaken) (R15)", 57)
+    oneXR15Button.MouseButton1Click:Connect(function()
+        local char = player.Character; if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        local animate = char:FindFirstChild("Animate"); if not animate then return end
+        oneXR15Active = not oneXR15Active
+        if oneXR15Active then
+            oneXR15Frame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+            oneXR15SavedData = {
+                walkSpeed = hum.WalkSpeed,
+                idle1 = animate.idle and animate.idle:FindFirstChild("Animation1") and animate.idle.Animation1.AnimationId or nil,
+                idle2 = animate.idle and animate.idle:FindFirstChild("Animation2") and animate.idle.Animation2.AnimationId or nil,
+                walkAnim = animate.walk and animate.walk:FindFirstChild("WalkAnim") and animate.walk.WalkAnim.AnimationId or nil,
+                runAnim = animate.run and animate.run:FindFirstChild("RunAnim") and animate.run.RunAnim.AnimationId or nil,
+            }
+            if animate.idle then
+                if animate.idle:FindFirstChild("Animation1") then animate.idle.Animation1.AnimationId = ANIM_1X_IDLE end
+                if animate.idle:FindFirstChild("Animation2") then animate.idle.Animation2.AnimationId = ANIM_1X_IDLE end
+            end
+            if animate.walk and animate.walk:FindFirstChild("WalkAnim") then animate.walk.WalkAnim.AnimationId = ANIM_1X_WALK end
+            if animate.run and animate.run:FindFirstChild("RunAnim") then animate.run.RunAnim.AnimationId = ANIM_1X_WALK end
+            hum.WalkSpeed = 10
+            forceReloadAnimate(char)
+        else
+            oneXR15Frame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+            if oneXR15SavedData then
+                hum.WalkSpeed = oneXR15SavedData.walkSpeed or 16
+                if oneXR15SavedData.idle1 and animate.idle and animate.idle:FindFirstChild("Animation1") then animate.idle.Animation1.AnimationId = oneXR15SavedData.idle1 end
+                if oneXR15SavedData.idle2 and animate.idle and animate.idle:FindFirstChild("Animation2") then animate.idle.Animation2.AnimationId = oneXR15SavedData.idle2 end
+                if oneXR15SavedData.walkAnim and animate.walk and animate.walk:FindFirstChild("WalkAnim") then animate.walk.WalkAnim.AnimationId = oneXR15SavedData.walkAnim end
+                if oneXR15SavedData.runAnim and animate.run and animate.run:FindFirstChild("RunAnim") then animate.run.RunAnim.AnimationId = oneXR15SavedData.runAnim end
+                forceReloadAnimate(char)
+                oneXR15SavedData = nil
+            end
+        end
+    end)
+
+    local tpGuiFrame, tpGuiButton = makeMenuButton("TP GUI", 58)
+    local tpGuiIndicator = createIndicator(tpGuiFrame)
+    local tpGuiEnabled = false
+    local tpGuiScreen = nil
+    tpGuiButton.MouseButton1Click:Connect(function()
+        tpGuiEnabled = not tpGuiEnabled
+        setIndicatorState(tpGuiIndicator, tpGuiEnabled)
+        if tpGuiEnabled then
+            if not tpGuiScreen then
+                tpGuiScreen = Instance.new("ScreenGui")
+                tpGuiScreen.Name = "TpGui"; tpGuiScreen.ResetOnSpawn = false
+                tpGuiScreen.Parent = playerGui
+                local tpMain = Instance.new("Frame")
+                tpMain.Size = UDim2.new(0, 280, 0, 140)
+                tpMain.Position = UDim2.new(0.5, -140, 0.5, -70)
+                tpMain.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+                tpMain.BorderSizePixel = 0; tpMain.Active = true; tpMain.Parent = tpGuiScreen
+                local tpMc = Instance.new("UICorner"); tpMc.CornerRadius = UDim.new(0, 10); tpMc.Parent = tpMain
+                local tpTitleBar = Instance.new("Frame")
+                tpTitleBar.Size = UDim2.new(1, 0, 0, 35)
+                tpTitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                tpTitleBar.BorderSizePixel = 0; tpTitleBar.Parent = tpMain
+                local tpTc = Instance.new("UICorner"); tpTc.CornerRadius = UDim.new(0, 10); tpTc.Parent = tpTitleBar
+                local tpTitleLabel = Instance.new("TextLabel")
+                tpTitleLabel.Size = UDim2.new(1, -10, 1, 0); tpTitleLabel.Position = UDim2.new(0, 10, 0, 0)
+                tpTitleLabel.BackgroundTransparency = 1; tpTitleLabel.Text = "TP GUI"
+                tpTitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255); tpTitleLabel.TextSize = 16
+                tpTitleLabel.Font = Enum.Font.SourceSansBold
+                tpTitleLabel.TextXAlignment = Enum.TextXAlignment.Left; tpTitleLabel.Parent = tpTitleBar
+                makeDraggable(tpMain, tpTitleBar)
+                local tpInput = Instance.new("TextBox")
+                tpInput.Size = UDim2.new(1, -20, 0, 35); tpInput.Position = UDim2.new(0, 10, 0, 45)
+                tpInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+                tpInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+                tpInput.PlaceholderText = "Enter player name..."
+                tpInput.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+                tpInput.Font = Enum.Font.SourceSans; tpInput.TextSize = 14
+                tpInput.Text = ""; tpInput.ClearTextOnFocus = false; tpInput.Parent = tpMain
+                local tpIc = Instance.new("UICorner"); tpIc.CornerRadius = UDim.new(0, 6); tpIc.Parent = tpInput
+                local tpEnter = Instance.new("TextButton")
+                tpEnter.Size = UDim2.new(1, -20, 0, 35); tpEnter.Position = UDim2.new(0, 10, 0, 90)
+                tpEnter.BackgroundColor3 = Color3.fromRGB(0, 150, 0); tpEnter.Text = "Enter"
+                tpEnter.TextColor3 = Color3.fromRGB(255, 255, 255)
+                tpEnter.Font = Enum.Font.SourceSansBold; tpEnter.TextSize = 14; tpEnter.Parent = tpMain
+                local tpEc = Instance.new("UICorner"); tpEc.CornerRadius = UDim.new(0, 6); tpEc.Parent = tpEnter
+                tpEnter.MouseButton1Click:Connect(function()
+                    local query = string.lower(tpInput.Text)
+                    if query == "" then return end
+                    local char = player.Character; if not char then return end
+                    local root = char:FindFirstChild("HumanoidRootPart"); if not root then return end
+                    for _, p in ipairs(Players:GetPlayers()) do
+                        if p ~= player and string.find(string.lower(p.Name), query, 1, true) then
+                            local pChar = p.Character
+                            if pChar then
+                                local pRoot = pChar:FindFirstChild("HumanoidRootPart")
+                                if pRoot then
+                                    root.CFrame = pRoot.CFrame * CFrame.new(0, 0, 3)
+                                end
+                            end
+                            break
+                        end
+                    end
+                end)
+            else
+                tpGuiScreen.Enabled = true
+            end
+        else
+            if tpGuiScreen then tpGuiScreen.Enabled = false end
+        end
+    end)
+
+    local tpRandFrame, tpRandButton = makeMenuButton("TP to random player", 59)
+    tpRandButton.MouseButton1Click:Connect(function()
+        local char = player.Character; if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart"); if not root then return end
+        local candidates = {}
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                local r = p.Character:FindFirstChild("HumanoidRootPart")
+                if r then table.insert(candidates, r) end
+            end
+        end
+        if #candidates == 0 then return end
+        local target = candidates[math.random(1, #candidates)]
+        root.CFrame = target.CFrame * CFrame.new(0, 0, 3)
+    end)
+
+    local tpFarFrame, tpFarButton = makeMenuButton("TP to further player", 60)
+    tpFarButton.MouseButton1Click:Connect(function()
+        local char = player.Character; if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart"); if not root then return end
+        local best, bestDist = nil, -1
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                local r = p.Character:FindFirstChild("HumanoidRootPart")
+                if r then
+                    local d = (r.Position - root.Position).Magnitude
+                    if d > bestDist then bestDist = d; best = r end
+                end
+            end
+        end
+        if best then root.CFrame = best.CFrame * CFrame.new(0, 0, 3) end
+    end)
+
+    local tpCloseFrame, tpCloseButton = makeMenuButton("TP to close player", 61)
+    tpCloseButton.MouseButton1Click:Connect(function()
+        local char = player.Character; if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart"); if not root then return end
+        local best, bestDist = nil, math.huge
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                local r = p.Character:FindFirstChild("HumanoidRootPart")
+                if r then
+                    local d = (r.Position - root.Position).Magnitude
+                    if d < bestDist then bestDist = d; best = r end
+                end
+            end
+        end
+        if best then root.CFrame = best.CFrame * CFrame.new(0, 0, 3) end
+    end)
+
+    local sitFrame, sitButton = makeMenuButton("Sit", 62)
+    local sitIndicator = createIndicator(sitFrame)
+    local sitEnabled = false
+    sitButton.MouseButton1Click:Connect(function()
+        sitEnabled = not sitEnabled
+        setIndicatorState(sitIndicator, sitEnabled)
+        local char = player.Character; if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        if sitEnabled then
+            hum.Sit = true
+        else
+            hum.Sit = false
+            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end)
+
+    makeScriptButton("TFFA OP Script (Moondiety)", 63, "https://moondiety.com/loader", "tffaOpScriptUsed")
+    makeScriptButton("Silentium hub (SilentiumHub)", 64, "https://raw.githubusercontent.com/rivalzpro/Silentium/refs/heads/main/silentium.lua", "silentiumHubUsed")
+
+    local invFlyFixFrame, invFlyFixButton = makeMenuButton("invincible fly (R15) fixed", 65)
+    local invFlyFixIndicator = createIndicator(invFlyFixFrame)
+    if invincibleFlyR15FixedUsed then
+        invFlyFixButton.TextColor3 = Color3.fromRGB(150,150,150)
+        setIndicatorState(invFlyFixIndicator, true)
+    end
+    invFlyFixButton.MouseButton1Click:Connect(function()
+        if invincibleFlyR15FixedUsed then return end
+        invincibleFlyR15FixedUsed = true
+        setIndicatorState(invFlyFixIndicator, true)
+        invFlyFixButton.TextColor3 = Color3.fromRGB(150,150,150)
+        task.spawn(function()
+            local UserInputService = game:GetService("UserInputService")
+            local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+            if isMobile then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/396abc/Script/refs/heads/main/MobileFly.lua"))()
+            else
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/396abc/Script/refs/heads/main/FlyR15.lua"))()
+            end
+        end)
+    end)
+
+    makeScriptButton("useless hub for Sae (DarkWolf17)", 66, "https://api.jnkie.com/api/v1/luascripts/public/1fcc9caf5398105aa1b01d89fa2dc1774d5859150eaea47f4c2a353decd0f3a4/download", "uselessHubSaeUsed")
+
+    local fovFrame, fovButton = makeMenuButton("Fov multiplier", 67)
+    local fovIndicator = createIndicator(fovFrame)
+    local fovGuiEnabled = false
+    local fovGui = nil
+    fovButton.MouseButton1Click:Connect(function()
+        fovGuiEnabled = not fovGuiEnabled
+        setIndicatorState(fovIndicator, fovGuiEnabled)
+        if fovGuiEnabled then
+            if not fovGui then
+                fovGui = Instance.new("ScreenGui"); fovGui.Name = "FovMultiplierGui"; fovGui.ResetOnSpawn = false; fovGui.Parent = playerGui
+                local fMain = Instance.new("Frame"); fMain.Size = UDim2.new(0, 280, 0, 150)
+                fMain.Position = UDim2.new(0.5, -140, 0.5, -75); fMain.BackgroundColor3 = Color3.fromRGB(25,25,25)
+                fMain.BorderSizePixel = 0; fMain.Active = true; fMain.Parent = fovGui
+                local fc = Instance.new("UICorner"); fc.CornerRadius = UDim.new(0,10); fc.Parent = fMain
+                local ftb = Instance.new("Frame"); ftb.Size = UDim2.new(1, 0, 0, 35)
+                ftb.BackgroundColor3 = Color3.fromRGB(40,40,40); ftb.BorderSizePixel = 0; ftb.Parent = fMain
+                local ftbc = Instance.new("UICorner"); ftbc.CornerRadius = UDim.new(0,10); ftbc.Parent = ftb
+                local ftl = Instance.new("TextLabel"); ftl.Size = UDim2.new(1, -10, 1, 0); ftl.Position = UDim2.new(0, 10, 0, 0)
+                ftl.BackgroundTransparency = 1; ftl.Text = "Fov Multiplier GUI"; ftl.TextColor3 = Color3.fromRGB(255,255,255)
+                ftl.TextSize = 16; ftl.Font = Enum.Font.SourceSansBold; ftl.TextXAlignment = Enum.TextXAlignment.Left; ftl.Parent = ftb
+                makeDraggable(fMain, ftb)
+                local fIn = Instance.new("TextBox"); fIn.Size = UDim2.new(1, -20, 0, 35); fIn.Position = UDim2.new(0, 10, 0, 45)
+                fIn.BackgroundColor3 = Color3.fromRGB(45,45,45); fIn.TextColor3 = Color3.fromRGB(255,255,255)
+                fIn.PlaceholderText = "Enter FOV here..."; fIn.PlaceholderColor3 = Color3.fromRGB(150,150,150)
+                fIn.Font = Enum.Font.SourceSans; fIn.TextSize = 14; fIn.Text = ""; fIn.ClearTextOnFocus = false; fIn.Parent = fMain
+                local fic = Instance.new("UICorner"); fic.CornerRadius = UDim.new(0,6); fic.Parent = fIn
+                local fEb = Instance.new("TextButton"); fEb.Size = UDim2.new(1, -20, 0, 35); fEb.Position = UDim2.new(0, 10, 0, 95)
+                fEb.BackgroundColor3 = Color3.fromRGB(0,150,0); fEb.Text = "Enter"; fEb.TextColor3 = Color3.fromRGB(255,255,255)
+                fEb.Font = Enum.Font.SourceSansBold; fEb.TextSize = 14; fEb.Parent = fMain
+                local fec = Instance.new("UICorner"); fec.CornerRadius = UDim.new(0,6); fec.Parent = fEb
+                fEb.MouseButton1Click:Connect(function()
+                    local n = tonumber(fIn.Text)
+                    if n and workspace.CurrentCamera then workspace.CurrentCamera.FieldOfView = n end
+                end)
+            else fovGui.Enabled = true end
+        else if fovGui then fovGui.Enabled = false end end
+    end)
+
+    local aimFrame, aimButton = makeMenuButton("aimbot", 68)
+    local aimIndicator = createIndicator(aimFrame)
+    local aimGuiEnabled = false
+    local aimGui = nil
+    local aimConn = nil
+    local aimTarget = nil
+
+    local function stopAim()
+        aimTarget = nil
+        if aimConn then aimConn:Disconnect(); aimConn = nil end
+    end
+
+    local function pickAimTarget(far)
+        local char = player.Character; if not char then return nil end
+        local root = char:FindFirstChild("HumanoidRootPart"); if not root then return nil end
+        local best, bestDist = nil, far and -1 or math.huge
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character then
+                local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+                if hum and hrp and hum.Health > 0 then
+                    local d = (hrp.Position - root.Position).Magnitude
+                    if far then
+                        if d > bestDist then bestDist = d; best = p end
+                    else
+                        if d < bestDist then bestDist = d; best = p end
+                    end
+                end
+            end
+        end
+        return best
+    end
+
+    local function startAim(far)
+        stopAim()
+        aimConn = RunService.RenderStepped:Connect(function()
+            local cam = workspace.CurrentCamera
+            if not cam then return end
+            if not aimTarget or not aimTarget.Parent or not aimTarget.Character then
+                aimTarget = pickAimTarget(far)
+            else
+                local hum = aimTarget.Character:FindFirstChildOfClass("Humanoid")
+                if not hum or hum.Health <= 0 then aimTarget = pickAimTarget(far) end
+            end
+            if not aimTarget or not aimTarget.Character then return end
+            local head = aimTarget.Character:FindFirstChild("Head") or aimTarget.Character:FindFirstChild("HumanoidRootPart")
+            if not head then return end
+            cam.CFrame = CFrame.new(cam.CFrame.Position, head.Position)
+        end)
+    end
+
+    aimButton.MouseButton1Click:Connect(function()
+        aimGuiEnabled = not aimGuiEnabled
+        setIndicatorState(aimIndicator, aimGuiEnabled)
+        if aimGuiEnabled then
+            if not aimGui then
+                aimGui = Instance.new("ScreenGui"); aimGui.Name = "AimbotGui"; aimGui.ResetOnSpawn = false; aimGui.Parent = playerGui
+                local aMain = Instance.new("Frame"); aMain.Size = UDim2.new(0, 280, 0, 170)
+                aMain.Position = UDim2.new(0.5, -140, 0.5, -85); aMain.BackgroundColor3 = Color3.fromRGB(25,25,25)
+                aMain.BorderSizePixel = 0; aMain.Active = true; aMain.Parent = aimGui
+                local amc = Instance.new("UICorner"); amc.CornerRadius = UDim.new(0,10); amc.Parent = aMain
+                local atb = Instance.new("Frame"); atb.Size = UDim2.new(1, 0, 0, 35)
+                atb.BackgroundColor3 = Color3.fromRGB(40,40,40); atb.BorderSizePixel = 0; atb.Parent = aMain
+                local atbc = Instance.new("UICorner"); atbc.CornerRadius = UDim.new(0,10); atbc.Parent = atb
+                local atl = Instance.new("TextLabel"); atl.Size = UDim2.new(1, -10, 1, 0); atl.Position = UDim2.new(0, 10, 0, 0)
+                atl.BackgroundTransparency = 1; atl.Text = "Aimbot GUI"; atl.TextColor3 = Color3.fromRGB(255,255,255)
+                atl.TextSize = 16; atl.Font = Enum.Font.SourceSansBold; atl.TextXAlignment = Enum.TextXAlignment.Left; atl.Parent = atb
+                makeDraggable(aMain, atb)
+                local farBtn = Instance.new("TextButton"); farBtn.Size = UDim2.new(1, -20, 0, 35); farBtn.Position = UDim2.new(0, 10, 0, 45)
+                farBtn.BackgroundColor3 = Color3.fromRGB(45,45,45); farBtn.Text = "on aimbot (further)"
+                farBtn.TextColor3 = Color3.fromRGB(255,255,255); farBtn.Font = Enum.Font.SourceSansBold
+                farBtn.TextSize = 14; farBtn.Parent = aMain
+                local farc = Instance.new("UICorner"); farc.CornerRadius = UDim.new(0,6); farc.Parent = farBtn
+                local closeBtn = Instance.new("TextButton"); closeBtn.Size = UDim2.new(1, -20, 0, 35); closeBtn.Position = UDim2.new(0, 10, 0, 90)
+                closeBtn.BackgroundColor3 = Color3.fromRGB(45,45,45); closeBtn.Text = "on aimbot (close)"
+                closeBtn.TextColor3 = Color3.fromRGB(255,255,255); closeBtn.Font = Enum.Font.SourceSansBold
+                closeBtn.TextSize = 14; closeBtn.Parent = aMain
+                local closec = Instance.new("UICorner"); closec.CornerRadius = UDim.new(0,6); closec.Parent = closeBtn
+                local offBtn = Instance.new("TextButton"); offBtn.Size = UDim2.new(1, -20, 0, 35); offBtn.Position = UDim2.new(0, 10, 0, 135)
+                offBtn.BackgroundColor3 = Color3.fromRGB(150,0,0); offBtn.Text = "off aimbot"
+                offBtn.TextColor3 = Color3.fromRGB(255,255,255); offBtn.Font = Enum.Font.SourceSansBold
+                offBtn.TextSize = 14; offBtn.Parent = aMain
+                local offc = Instance.new("UICorner"); offc.CornerRadius = UDim.new(0,6); offc.Parent = offBtn
+                farBtn.MouseButton1Click:Connect(function()
+                    startAim(true)
+                    farBtn.BackgroundColor3 = Color3.fromRGB(0,150,0)
+                    closeBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+                end)
+                closeBtn.MouseButton1Click:Connect(function()
+                    startAim(false)
+                    closeBtn.BackgroundColor3 = Color3.fromRGB(0,150,0)
+                    farBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+                end)
+                offBtn.MouseButton1Click:Connect(function()
+                    stopAim()
+                    farBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+                    closeBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+                end)
+            else aimGui.Enabled = true end
+        else
+            if aimGui then aimGui.Enabled = false end
+            stopAim()
+        end
+    end)
+
+    makeScriptButton("Assistant for RoChess (94ky)", 69, "https://scriptblox.com/raw/RoChess-Chess-Assistant-236893", "assistantRoChessUsed")
+    makeScriptButton("BotPlay for FF (breezipsettings)", 70, "https://pastebin.com/raw/WygWU1FS", "botPlayFFUsed")
+    makeScriptButton("Chat Roblox (breezipsettings)", 71, "https://gist.githubusercontent.com/breezipsettings-max/72ca471e89dc03b07d4d74142ff758fe/raw/138550edb3ae094411bc91c6889f0cebc2d5f4a7/CHAT%2520ROBLOX.lua", "chatRobloxUsed")
+    makeScriptButton("Realistic FP (breezipsettings)", 72, "https://pastebin.com/raw/s3djuewJ", "realisticFPUsed")
+    makeScriptButton("Workbench crafting (Hanaki)", 73, "https://scriptblox.com/raw/Universal-Script-Workbench-crafting-portal-gunmore-236878", "workbenchCraftingUsed")
+    makeScriptButton("catsaken (forsakenUPLOADER)", 74, "https://scriptblox.com/raw/WEEK-2-Forsaken-Catsaken-V3-Keyless-for-latest-patch-227311", "catsakenUsed")
+    makeScriptButton("Code Interpreter (nirvingle)", 75, "https://scriptblox.com/raw/Make-a-Server-Code-Interpreter-KEYLESS-XENO-SUPPORT-236960", "codeInterpreterUsed")
+    makeScriptButton("xzyp Music Player (xzyp)", 76, "https://scriptblox.com/raw/Universal-Script-xzyp-Music-player-or-Open-Source-236981", "xzypMusicPlayerUsed")
+    makeScriptButton("Nooby's uh reanimation (STEVETHEREALONE)", 77, "https://scriptblox.com/raw/Universal-Script-Noobys-uh-modded-reanimation-233505", "noobysReanimationUsed")
+end
+
+-- ========== СТАРТ ==========
+createKeySystem()
